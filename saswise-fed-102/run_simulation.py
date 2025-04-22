@@ -37,8 +37,8 @@ def run_simulation():
     from saswise_fed_102.client_app import FlowerClient
     
     # Configuration
-    NUM_CLIENTS = 10
-    NUM_ROUNDS = 100  # Increased to 100 epochs
+    NUM_CLIENTS = 6  # Using 6 clients for 6 sites
+    NUM_ROUNDS = 100  # 100 epochs
     LOCAL_EPOCHS = 1
     
     # Storage for client-specific training losses
@@ -62,7 +62,10 @@ def run_simulation():
             self.client_id = client_id
             
         def fit(self, parameters, config):
-            set_weights(self.net, parameters)
+            # Use the parent's set_parameters method to set weights
+            self.set_parameters(parameters)
+            
+            # Train the model
             train_loss = train(
                 self.net,
                 self.trainloader,
@@ -74,22 +77,26 @@ def run_simulation():
             client_losses[self.client_id].append(train_loss)
             print(f"Client {self.client_id} - Round {len(client_losses[self.client_id])} - Loss: {train_loss:.4f}")
             
+            # Return updated parameters, sample size, and metrics
             return (
-                get_weights(self.net),
+                self.get_parameters(config),
                 len(self.trainloader.dataset),
                 {"train_loss": train_loss, "client_id": self.client_id},
             )
     
     # Define client_fn with client ID tracking
     def client_fn(context):
-        # Get the client ID from the context
-        partition_id = context.node_config["partition-id"]
+        # Get the client ID from the context (site ID in our case, 1-6)
+        node_id = context.node_config["node-id"]
+        # Convert to valid site ID (1-6)
+        site_id = (node_id % NUM_CLIENTS) + 1
         
         # Load model and ensure it's on the right device
-        net = Net().to(DEVICE)
+        # For medical images, we use 1 input channel
+        net = Net(in_channels=1, num_classes=2).to(DEVICE)
         
-        # Load data
-        trainloader, valloader = load_data(partition_id, NUM_CLIENTS)
+        # Load data for this site
+        trainloader, valloader = load_data(site_id=site_id, num_sites=NUM_CLIENTS)
         
         # Return client with device specification and client ID
         return DetailedFlowerClient(
@@ -97,7 +104,7 @@ def run_simulation():
             trainloader, 
             valloader, 
             LOCAL_EPOCHS, 
-            client_id=partition_id
+            client_id=site_id
         ).to_client()
     
     # Define weighted_average
@@ -112,7 +119,7 @@ def run_simulation():
                     client_metrics[client_id] = loss
         
         # Compute the standard metrics
-        accuracies = [num_examples * m["accuracy"] for num_examples, m in metrics]
+        accuracies = [num_examples * m["accuracy"] for num_examples, m in metrics if "accuracy" in m]
         examples = [num_examples for num_examples, _ in metrics]
         
         # Print client metrics
@@ -121,13 +128,17 @@ def run_simulation():
             print(f"Client {client_id}: Loss = {loss:.4f}")
         print("============================================\n")
         
-        return {"accuracy": sum(accuracies) / sum(examples)}
+        # Return the weighted average accuracy or 0 if no examples
+        if len(examples) > 0 and sum(examples) > 0:
+            return {"accuracy": sum(accuracies) / sum(examples)}
+        else:
+            return {"accuracy": 0.0}
     
     # Import task's set_weights to use in DetailedFlowerClient
     from saswise_fed_102.task import set_weights
     
     # Initialize model parameters - IMPORTANT to fix the model initialization issue
-    initial_model = Net()
+    initial_model = Net(in_channels=1, num_classes=2)
     initial_parameters = get_weights(initial_model)
     initial_parameters = ndarrays_to_parameters(initial_parameters)
     
@@ -135,10 +146,10 @@ def run_simulation():
     def server_fn(context: Context) -> ServerAppComponents:
         # Create strategy with initial parameters
         strategy = FedAvg(
-            fraction_fit=1.0,
-            fraction_evaluate=0.5,
-            min_fit_clients=NUM_CLIENTS,
-            min_evaluate_clients=5,
+            fraction_fit=1.0,  # Ensure all clients participate in training
+            fraction_evaluate=1.0,  # Ensure all clients participate in evaluation
+            min_fit_clients=NUM_CLIENTS,  # All clients must train in each round
+            min_evaluate_clients=NUM_CLIENTS,  # All clients must evaluate in each round
             min_available_clients=NUM_CLIENTS,
             evaluate_metrics_aggregation_fn=weighted_average,
             initial_parameters=initial_parameters,  # Use initialized parameters
@@ -182,14 +193,21 @@ def run_simulation():
         # CPU-only configuration
         backend_config = {"client_resources": {"num_cpus": 1, "num_gpus": 0.0}}
     
+    # Make sure client_losses is properly initialized with empty lists for each client ID
+    for client_id in range(1, NUM_CLIENTS + 1):  # Client IDs 1-6
+        client_losses[client_id] = []
+    
     # Run simulation
-    print(f"Starting 100-epoch local simulation with {NUM_CLIENTS} clients on {DEVICE}...")
-    run_simulation(
-        server_app=server,
-        client_app=client,
-        num_supernodes=NUM_CLIENTS,
-        backend_config=backend_config,
-    )
+    print(f"Starting simulation with {NUM_CLIENTS} medical imaging sites on {DEVICE}...")
+    try:
+        run_simulation(
+            server_app=server,
+            client_app=client,
+            num_supernodes=NUM_CLIENTS,  # Each supernode corresponds to a site
+            backend_config=backend_config,
+        )
+    except Exception as e:
+        print(f"Error during simulation: {e}")
     
     # Print final loss summary for all clients
     print("\n=== Final Client Loss Summary ===")
@@ -201,6 +219,8 @@ def run_simulation():
             final_loss = losses[-1]
             improvement = initial_loss - final_loss
             print(f"Client {client_id:7d} | {len(losses):6d} | {initial_loss:12.4f} | {final_loss:10.4f} | {improvement:11.4f}")
+        else:
+            print(f"Client {client_id:7d} | No training data recorded")
     
     print("\nSimulation completed!")
 
