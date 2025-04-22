@@ -50,7 +50,7 @@ class CIFAR10Wrapper(Dataset):
         return len(self.dataset)
 
 
-def load_data(partition_id: int, num_partitions: int):
+def load_data(partition_id: int, num_partitions: int, batch_size: int = 32):
     """Load partition CIFAR10 data using torchvision to avoid SSL issues."""
     # Define transforms
     transforms = Compose([
@@ -121,9 +121,9 @@ def load_data(partition_id: int, num_partitions: int):
     wrapped_train = CIFAR10Wrapper(train_subset)
     wrapped_val = CIFAR10Wrapper(val_subset)
     
-    # Create data loaders
-    trainloader = DataLoader(wrapped_train, batch_size=32, shuffle=True)
-    valloader = DataLoader(wrapped_val, batch_size=32)
+    # Create data loaders with specified batch size
+    trainloader = DataLoader(wrapped_train, batch_size=batch_size, shuffle=True)
+    valloader = DataLoader(wrapped_val, batch_size=batch_size)
     
     return trainloader, valloader
 
