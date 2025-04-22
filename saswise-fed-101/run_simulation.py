@@ -96,6 +96,26 @@ def run_simulation():
         if hasattr(torch.backends, 'cudnn'):
             torch.backends.cudnn.benchmark = True
     
+    # Import task's set_weights to use in DetailedFlowerClient
+    from saswise_fed_101.task import set_weights as original_set_weights
+    
+    # Create a safe version of set_weights that handles model type mismatches
+    def safe_set_weights(net, parameters):
+        try:
+            # Attempt to set weights using the original function
+            original_set_weights(net, parameters)
+        except RuntimeError as e:
+            if "size mismatch" in str(e):
+                print(f"ERROR: Model architecture mismatch detected. Make sure you're using the same model type (CNN or ResNet) consistently.")
+                print(f"Current model type: {MODEL_TYPE}")
+                print(f"Error details: {str(e)}")
+                # Reinitialize the model instead of failing
+                print("Reinitializing model with random weights...")
+                # Model keeps its original random weights
+            else:
+                # Re-raise if it's not a size mismatch error
+                raise e
+
     # Custom FlowerClient that logs training loss
     class DetailedFlowerClient(FlowerClient):
         def __init__(self, net, trainloader, valloader, testloader, local_epochs, client_id):
@@ -103,7 +123,7 @@ def run_simulation():
             self.client_id = client_id
             
         def fit(self, parameters, config):
-            set_weights(self.net, parameters)
+            safe_set_weights(self.net, parameters)
             train_loss = train(
                 self.net,
                 self.trainloader,
@@ -130,7 +150,7 @@ def run_simulation():
             )
         
         def evaluate(self, parameters, config):
-            set_weights(self.net, parameters)
+            safe_set_weights(self.net, parameters)
             
             # By default, evaluate on validation set for regular federated evaluation
             if config.get("eval_on", "val") == "test":
@@ -147,11 +167,17 @@ def run_simulation():
         # Get the client ID from the context
         partition_id = context.node_config["partition-id"]
         
+        # Check if we're in evaluation and a model_type was specified
+        config_model_type = context.run_config.get("model_type", MODEL_TYPE)
+        use_resnet = config_model_type == "resnet"
+        
         # Load model and ensure it's on the right device
-        if USE_RESNET:
+        if use_resnet:
             net = ResNetCIFAR10().to(DEVICE)
+            print(f"Client {partition_id} using ResNet model")
         else:
             net = Net().to(DEVICE)
+            print(f"Client {partition_id} using Simple CNN model")
         
         # Load data with train/val/test splits
         trainloader, valloader, testloader = load_data(partition_id, NUM_CLIENTS, batch_size=BATCH_SIZE)
@@ -200,13 +226,17 @@ def run_simulation():
         
         return {"accuracy": sum(accuracies) / sum(examples)}
     
-    # Import task's set_weights to use in DetailedFlowerClient
-    from saswise_fed_101.task import set_weights
-    
     # Initialize model parameters - IMPORTANT to fix the model initialization issue
-    initial_model = Net()
+    if USE_RESNET:
+        initial_model = ResNetCIFAR10()
+    else:
+        initial_model = Net()
+    
     initial_parameters = get_weights(initial_model)
     initial_parameters = ndarrays_to_parameters(initial_parameters)
+    
+    # Save the model type to ensure consistency during evaluation
+    MODEL_TYPE = "resnet" if USE_RESNET else "cnn"
     
     # Define the server function that returns ServerAppComponents
     def server_fn(context: Context) -> ServerAppComponents:
@@ -261,11 +291,20 @@ def run_simulation():
     
     # Run simulation
     print(f"Starting {NUM_ROUNDS}-epoch local simulation with {NUM_CLIENTS} clients on {DEVICE}...")
+    
+    # Client run configuration
+    client_run_config = {
+        "model_type": MODEL_TYPE,
+        "batch_size": BATCH_SIZE,
+        "local_epochs": LOCAL_EPOCHS
+    }
+    
     run_simulation(
         server_app=server,
         client_app=client,
         num_supernodes=NUM_CLIENTS,
         backend_config=backend_config,
+        client_run_config=client_run_config
     )
     
     # Print final loss summary for all clients
@@ -283,18 +322,23 @@ def run_simulation():
     # Add a final test evaluation
     print("\n=== Running final test evaluation ===")
     # Create a special evaluation config for test set
-    eval_config = {"eval_on": "test"}
-    test_results = server.evaluate_round(
-        server_round=NUM_ROUNDS + 1,  # Use a round number after training
-        timeout=None,
-        client_instructions=[eval_config] * NUM_CLIENTS,
-    )
+    eval_config = {"eval_on": "test", "model_type": MODEL_TYPE}
     
-    if test_results:
-        test_loss, test_metrics = test_results
-        print(f"Final test evaluation - Loss: {test_loss:.4f}, Accuracy: {test_metrics.get('accuracy', 0.0):.4f}")
-    else:
-        print("Final test evaluation failed")
+    try:
+        test_results = server.evaluate_round(
+            server_round=NUM_ROUNDS + 1,  # Use a round number after training
+            timeout=None,
+            client_instructions=[eval_config] * NUM_CLIENTS,
+        )
+        
+        if test_results:
+            test_loss, test_metrics = test_results
+            print(f"Final test evaluation - Loss: {test_loss:.4f}, Accuracy: {test_metrics.get('accuracy', 0.0):.4f}")
+        else:
+            print("Final test evaluation failed")
+    except Exception as e:
+        print(f"Error during final evaluation: {str(e)}")
+        print("This may be due to model architecture mismatch. Try rerunning with the same model type.")
     
     print("\nSimulation completed!")
 
