@@ -1,0 +1,6 @@
+flwr>=1.0
+numpy<2.0  # Ensures compatibility with modules compiled with NumPy 1.x
+torch>=1.12.0
+torchvision>=0.13.0
+matplotlib>=3.5.0
+flwr_datasets>=0.0.2 

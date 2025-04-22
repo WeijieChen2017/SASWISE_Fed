@@ -3,23 +3,33 @@
 This script runs a federated learning simulation based on the SASWISE Fed-101 client and server.
 """
 
-import torch
-from typing import List, Tuple
 import sys
 import os
 
-# Add the parent directory to sys.path to allow relative imports
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add the current directory to the Python path for Docker compatibility
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
+try:
+    # Try direct imports first (works when running as a module)
+    from task import Net, load_data, test, train
+    from client_app import FlowerClient
+except ImportError:
+    # Fall back to explicit imports (works in various contexts)
+    from saswise_fed_101.task import Net, load_data, test, train
+    from saswise_fed_101.client_app import FlowerClient
+
+# Import torch after setting up paths
+import torch
+from typing import List, Tuple
 
 from flwr.client import Client, ClientApp
 from flwr.common import Metrics, Context
 from flwr.server import ServerApp, ServerConfig, ServerAppComponents
 from flwr.server.strategy import FedAvg
 from flwr.simulation import run_simulation
-
-# Import relative to where the script is being run
-from saswise_fed_101.task import Net, load_data, test, train
-from saswise_fed_101.client_app import FlowerClient
 
 # Configuration
 NUM_CLIENTS = 10
