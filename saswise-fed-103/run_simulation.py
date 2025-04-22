@@ -175,17 +175,21 @@ def save_round_metrics(round_num):
     
     round_data = client_metrics[round_num]
     
+    # Initialize global metrics dict if it doesn't exist
+    if "global" not in round_data:
+        round_data["global"] = {}
+    
     # Calculate global metrics (averages across all clients)
     if "clients" in round_data and round_data["clients"]:
         train_losses = [client["training_loss"] for client in round_data["clients"]]
         val_losses = [client["validation_loss"] for client in round_data["clients"]]
         val_accuracies = [client["validation_accuracy"] for client in round_data["clients"]]
         
-        round_data["global"] = {
+        round_data["global"].update({
             "training_loss": sum(train_losses) / len(train_losses),
             "validation_loss": sum(val_losses) / len(val_losses),
             "validation_accuracy": sum(val_accuracies) / len(val_accuracies)
-        }
+        })
     
     # Add test subset accuracies if round data includes them
     if "test_subset_metrics" in round_data:
