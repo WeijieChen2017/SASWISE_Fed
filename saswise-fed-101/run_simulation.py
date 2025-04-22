@@ -7,6 +7,9 @@ This script serves as a direct entry point for running the simulation in Docker.
 import os
 import sys
 import argparse
+import matplotlib.pyplot as plt
+import json
+import datetime
 
 # Ensure we use the right Python path
 package_root = os.path.dirname(os.path.abspath(__file__))
@@ -153,7 +156,21 @@ def run_simulation():
             safe_set_weights(self.net, parameters)
             
             # By default, evaluate on validation set for regular federated evaluation
-            if config.get("eval_on", "val") == "test":
+            # The config here is from server.evaluate_round, not node_config
+            # Get eval_on from node_config (stored in context) if available
+            eval_on = "val"
+            
+            # Try to get the partition ID for this client
+            try:
+                from flwr.common.context import Context
+                ctx = Context.get()
+                if ctx and ctx.node_config:
+                    eval_on = ctx.node_config.get("eval_on", "val")
+            except Exception:
+                # If Context.get() fails, use the old approach from config
+                eval_on = config.get("eval_on", "val")
+            
+            if eval_on == "test":
                 # If specifically asked to evaluate on test set
                 loss, accuracy = test(self.net, self.testloader, self.device)
                 return loss, len(self.testloader.dataset), {"accuracy": accuracy, "dataset": "test", "client_id": self.client_id}
@@ -168,8 +185,12 @@ def run_simulation():
         partition_id = context.node_config["partition-id"]
         
         # Check if we're in evaluation and a model_type was specified
-        config_model_type = context.run_config.get("model_type", MODEL_TYPE)
+        config_model_type = context.node_config.get("model_type", MODEL_TYPE)
         use_resnet = config_model_type == "resnet"
+        
+        # Get batch size and local epochs from node_config
+        batch_size = context.node_config.get("batch_size", BATCH_SIZE)
+        local_epochs = context.node_config.get("local_epochs", LOCAL_EPOCHS)
         
         # Load model and ensure it's on the right device
         if use_resnet:
@@ -180,7 +201,7 @@ def run_simulation():
             print(f"Client {partition_id} using Simple CNN model")
         
         # Load data with train/val/test splits
-        trainloader, valloader, testloader = load_data(partition_id, NUM_CLIENTS, batch_size=BATCH_SIZE)
+        trainloader, valloader, testloader = load_data(partition_id, NUM_CLIENTS, batch_size=batch_size)
         
         # Return client with device specification and client ID
         return DetailedFlowerClient(
@@ -188,7 +209,7 @@ def run_simulation():
             trainloader, 
             valloader,
             testloader,
-            LOCAL_EPOCHS, 
+            local_epochs, 
             client_id=partition_id
         ).to_client()
     
@@ -289,22 +310,72 @@ def run_simulation():
         # CPU-only configuration
         backend_config = {"client_resources": {"num_cpus": 1, "num_gpus": 0.0}}
     
+    # Add logging for training/validation curves
+    import matplotlib.pyplot as plt
+    import json
+    import datetime
+    
+    # Create a timestamped log directory
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_dir = f"logs_{timestamp}"
+    os.makedirs(log_dir, exist_ok=True)
+    
+    # Function to log metrics to file and create plots
+    def log_metrics_and_plot():
+        # Save all metrics to a JSON file
+        metrics_data = {
+            "client_losses": {str(client_id): losses for client_id, losses in client_losses.items()},
+            "val_accuracies": {str(client_id): accs for client_id, accs in val_accuracies.items()}
+        }
+        
+        with open(f"{log_dir}/metrics.json", "w") as f:
+            json.dump(metrics_data, f, indent=4)
+        
+        # Create training loss curve
+        plt.figure(figsize=(10, 6))
+        for client_id, losses in client_losses.items():
+            plt.plot(losses, label=f"Client {client_id}")
+        plt.title("Training Loss per Client")
+        plt.xlabel("Round")
+        plt.ylabel("Loss")
+        plt.legend()
+        plt.savefig(f"{log_dir}/training_loss_curve.png")
+        
+        # Create validation accuracy curve
+        plt.figure(figsize=(10, 6))
+        for client_id, accs in val_accuracies.items():
+            plt.plot(accs, label=f"Client {client_id}")
+        plt.title("Validation Accuracy per Client")
+        plt.xlabel("Round")
+        plt.ylabel("Accuracy")
+        plt.legend()
+        plt.savefig(f"{log_dir}/validation_accuracy_curve.png")
+        
+        print(f"Saved metrics and plots to {log_dir}/")
+
     # Run simulation
     print(f"Starting {NUM_ROUNDS}-epoch local simulation with {NUM_CLIENTS} clients on {DEVICE}...")
     
-    # Client run configuration
-    client_run_config = {
-        "model_type": MODEL_TYPE,
-        "batch_size": BATCH_SIZE,
-        "local_epochs": LOCAL_EPOCHS
-    }
+    # Set node configs for each client
+    client_node_configs = []
+    for i in range(NUM_CLIENTS):
+        # Pass the model type in the node config instead
+        node_config = {
+            "partition-id": i,
+            "model_type": MODEL_TYPE,
+            "batch_size": BATCH_SIZE,
+            "local_epochs": LOCAL_EPOCHS
+        }
+        client_node_configs.append(node_config)
     
+    # Remove client_run_config as it's not supported in this version
     run_simulation(
         server_app=server,
         client_app=client,
         num_supernodes=NUM_CLIENTS,
         backend_config=backend_config,
-        client_run_config=client_run_config
+        # Pass model type and other settings via node_configs
+        client_node_configs=client_node_configs
     )
     
     # Print final loss summary for all clients
@@ -319,21 +390,39 @@ def run_simulation():
             final_val_acc = val_accuracies[client_id][-1] if client_id in val_accuracies and val_accuracies[client_id] else 0.0
             print(f"Client {client_id:7d} | {len(losses):6d} | {initial_loss:12.4f} | {final_loss:10.4f} | {improvement:11.4f} | {final_val_acc:.4f}")
     
+    # Generate plots and save metrics
+    log_metrics_and_plot()
+    
     # Add a final test evaluation
     print("\n=== Running final test evaluation ===")
     # Create a special evaluation config for test set
-    eval_config = {"eval_on": "test", "model_type": MODEL_TYPE}
-    
     try:
+        # Set up node config for test evaluation
+        test_node_configs = []
+        for i in range(NUM_CLIENTS):
+            test_config = {
+                "partition-id": i,
+                "model_type": MODEL_TYPE,
+                "eval_on": "test"
+            }
+            test_node_configs.append(test_config)
+            
         test_results = server.evaluate_round(
             server_round=NUM_ROUNDS + 1,  # Use a round number after training
             timeout=None,
-            client_instructions=[eval_config] * NUM_CLIENTS,
+            node_configs=test_node_configs  # Use node_configs instead of client_instructions
         )
         
         if test_results:
             test_loss, test_metrics = test_results
             print(f"Final test evaluation - Loss: {test_loss:.4f}, Accuracy: {test_metrics.get('accuracy', 0.0):.4f}")
+            
+            # Save test results
+            with open(f"{log_dir}/test_results.json", "w") as f:
+                json.dump({
+                    "test_loss": float(test_loss),
+                    "test_accuracy": float(test_metrics.get("accuracy", 0.0))
+                }, f, indent=4)
         else:
             print("Final test evaluation failed")
     except Exception as e:
