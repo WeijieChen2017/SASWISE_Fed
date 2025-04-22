@@ -6,16 +6,35 @@ This script serves as a direct entry point for running the simulation in Docker.
 
 import os
 import sys
+import argparse
 
 # Ensure we use the right Python path
 package_root = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, package_root)
+
+# Parse command line arguments
+def parse_args():
+    parser = argparse.ArgumentParser(description="SASWISE Fed-101 Simulation")
+    parser.add_argument("--num_rounds", type=int, default=500,
+                       help="Number of federated learning rounds (default: 500)")
+    parser.add_argument("--num_clients", type=int, default=10,
+                       help="Number of clients to simulate (default: 10)")
+    parser.add_argument("--local_epochs", type=int, default=1,
+                       help="Number of local training epochs on each client (default: 1)")
+    parser.add_argument("--use_resnet", action="store_true",
+                       help="Use ResNet model instead of simple CNN")
+    parser.add_argument("--batch_size", type=int, default=32,
+                       help="Batch size for training (default: 32)")
+    return parser.parse_args()
 
 # Create a standalone simulation runner that doesn't rely on importing
 # This avoids Python package/import complexities in different environments
 def run_simulation():
     """Standalone implementation to run the simulation"""
     print("Setting up simulation environment...")
+    
+    # Parse command line arguments
+    args = parse_args()
     
     # Import the required modules directly
     import torch
@@ -36,17 +55,39 @@ def run_simulation():
     from saswise_fed_101.task import Net, load_data, test, train, get_weights
     from saswise_fed_101.client_app import FlowerClient
     
+    # Add ResNet support
+    class ResNetCIFAR10(torch.nn.Module):
+        def __init__(self):
+            super(ResNetCIFAR10, self).__init__()
+            # Use a pre-trained ResNet model but modify for CIFAR-10
+            import torchvision.models as models
+            self.model = models.resnet18(pretrained=False)
+            # Modify the first conv layer to accept 3-channel 32x32 inputs
+            self.model.conv1 = torch.nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
+            # Remove maxpool as CIFAR-10 images are much smaller than ImageNet
+            self.model.maxpool = torch.nn.Identity()
+            # Adjust the final layer for 10 classes
+            self.model.fc = torch.nn.Linear(self.model.fc.in_features, 10)
+            
+        def forward(self, x):
+            return self.model(x)
+    
     # Configuration
-    NUM_CLIENTS = 10
-    NUM_ROUNDS = 100  # Increased to 100 epochs
-    LOCAL_EPOCHS = 1
+    NUM_CLIENTS = args.num_clients
+    NUM_ROUNDS = args.num_rounds
+    LOCAL_EPOCHS = args.local_epochs
+    USE_RESNET = args.use_resnet
+    BATCH_SIZE = args.batch_size
     
     # Storage for client-specific training losses
     client_losses = defaultdict(list)
+    val_accuracies = defaultdict(list)
     
     # GPU setup for local simulation
     DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(f"Training on {DEVICE}")
+    print(f"Configuration: {NUM_CLIENTS} clients, {NUM_ROUNDS} rounds, {LOCAL_EPOCHS} local epochs, batch size {BATCH_SIZE}")
+    print(f"Using {'ResNet' if USE_RESNET else 'Simple CNN'} model")
     
     # If using GPU, optimize memory usage
     if DEVICE.type == "cuda":
@@ -57,8 +98,8 @@ def run_simulation():
     
     # Custom FlowerClient that logs training loss
     class DetailedFlowerClient(FlowerClient):
-        def __init__(self, net, trainloader, valloader, local_epochs, client_id):
-            super().__init__(net, trainloader, valloader, local_epochs)
+        def __init__(self, net, trainloader, valloader, testloader, local_epochs, client_id):
+            super().__init__(net, trainloader, valloader, testloader, local_epochs)
             self.client_id = client_id
             
         def fit(self, parameters, config):
@@ -70,15 +111,36 @@ def run_simulation():
                 self.device,
             )
             
+            # Evaluate on validation set after training
+            val_loss, val_accuracy = test(self.net, self.valloader, self.device)
+            
             # Save and print client-specific loss
             client_losses[self.client_id].append(train_loss)
-            print(f"Client {self.client_id} - Round {len(client_losses[self.client_id])} - Loss: {train_loss:.4f}")
+            print(f"Client {self.client_id} - Round {len(client_losses[self.client_id])} - Loss: {train_loss:.4f} - Val Acc: {val_accuracy:.4f}")
             
             return (
                 get_weights(self.net),
                 len(self.trainloader.dataset),
-                {"train_loss": train_loss, "client_id": self.client_id},
+                {
+                    "train_loss": train_loss, 
+                    "client_id": self.client_id,
+                    "val_loss": val_loss,
+                    "val_accuracy": val_accuracy
+                },
             )
+        
+        def evaluate(self, parameters, config):
+            set_weights(self.net, parameters)
+            
+            # By default, evaluate on validation set for regular federated evaluation
+            if config.get("eval_on", "val") == "test":
+                # If specifically asked to evaluate on test set
+                loss, accuracy = test(self.net, self.testloader, self.device)
+                return loss, len(self.testloader.dataset), {"accuracy": accuracy, "dataset": "test", "client_id": self.client_id}
+            else:
+                # Regular evaluation on validation set
+                loss, accuracy = test(self.net, self.valloader, self.device)
+                return loss, len(self.valloader.dataset), {"accuracy": accuracy, "dataset": "val", "client_id": self.client_id}
     
     # Define client_fn with client ID tracking
     def client_fn(context):
@@ -86,16 +148,20 @@ def run_simulation():
         partition_id = context.node_config["partition-id"]
         
         # Load model and ensure it's on the right device
-        net = Net().to(DEVICE)
+        if USE_RESNET:
+            net = ResNetCIFAR10().to(DEVICE)
+        else:
+            net = Net().to(DEVICE)
         
-        # Load data
-        trainloader, valloader = load_data(partition_id, NUM_CLIENTS)
+        # Load data with train/val/test splits
+        trainloader, valloader, testloader = load_data(partition_id, NUM_CLIENTS, batch_size=BATCH_SIZE)
         
         # Return client with device specification and client ID
         return DetailedFlowerClient(
             net, 
             trainloader, 
-            valloader, 
+            valloader,
+            testloader,
             LOCAL_EPOCHS, 
             client_id=partition_id
         ).to_client()
@@ -107,18 +173,29 @@ def run_simulation():
         for num_examples, met in metrics:
             if "client_id" in met:
                 client_id = met["client_id"]
-                if "train_loss" in met:
-                    loss = met["train_loss"]
-                    client_metrics[client_id] = loss
+                client_metrics[client_id] = {
+                    "loss": met.get("train_loss", 0.0),
+                    "val_accuracy": met.get("val_accuracy", 0.0),
+                    "val_loss": met.get("val_loss", 0.0),
+                    "dataset": met.get("dataset", "val")
+                }
+                
+                # Store validation accuracy for tracking
+                if "val_accuracy" in met:
+                    val_accuracies[client_id].append(met["val_accuracy"])
         
         # Compute the standard metrics
         accuracies = [num_examples * m["accuracy"] for num_examples, m in metrics]
         examples = [num_examples for num_examples, _ in metrics]
         
         # Print client metrics
-        print("\n=== Client Training Losses for this round ===")
-        for client_id, loss in sorted(client_metrics.items()):
-            print(f"Client {client_id}: Loss = {loss:.4f}")
+        print("\n=== Client Training Metrics for this round ===")
+        for client_id, metrics_dict in sorted(client_metrics.items()):
+            dataset_type = metrics_dict.get("dataset", "val")
+            if dataset_type == "test":
+                print(f"Client {client_id}: Test Accuracy = {metrics_dict.get('accuracy', 0.0):.4f}")
+            else:
+                print(f"Client {client_id}: Loss = {metrics_dict.get('loss', 0.0):.4f}, Val Accuracy = {metrics_dict.get('val_accuracy', 0.0):.4f}")
         print("============================================\n")
         
         return {"accuracy": sum(accuracies) / sum(examples)}
@@ -183,7 +260,7 @@ def run_simulation():
         backend_config = {"client_resources": {"num_cpus": 1, "num_gpus": 0.0}}
     
     # Run simulation
-    print(f"Starting 100-epoch local simulation with {NUM_CLIENTS} clients on {DEVICE}...")
+    print(f"Starting {NUM_ROUNDS}-epoch local simulation with {NUM_CLIENTS} clients on {DEVICE}...")
     run_simulation(
         server_app=server,
         client_app=client,
@@ -193,14 +270,31 @@ def run_simulation():
     
     # Print final loss summary for all clients
     print("\n=== Final Client Loss Summary ===")
-    print("Client ID | Epochs | Initial Loss | Final Loss | Improvement")
-    print("-" * 65)
+    print("Client ID | Epochs | Initial Loss | Final Loss | Improvement | Final Val Acc")
+    print("-" * 80)
     for client_id, losses in sorted(client_losses.items()):
         if losses:
             initial_loss = losses[0]
             final_loss = losses[-1]
             improvement = initial_loss - final_loss
-            print(f"Client {client_id:7d} | {len(losses):6d} | {initial_loss:12.4f} | {final_loss:10.4f} | {improvement:11.4f}")
+            final_val_acc = val_accuracies[client_id][-1] if client_id in val_accuracies and val_accuracies[client_id] else 0.0
+            print(f"Client {client_id:7d} | {len(losses):6d} | {initial_loss:12.4f} | {final_loss:10.4f} | {improvement:11.4f} | {final_val_acc:.4f}")
+    
+    # Add a final test evaluation
+    print("\n=== Running final test evaluation ===")
+    # Create a special evaluation config for test set
+    eval_config = {"eval_on": "test"}
+    test_results = server.evaluate_round(
+        server_round=NUM_ROUNDS + 1,  # Use a round number after training
+        timeout=None,
+        client_instructions=[eval_config] * NUM_CLIENTS,
+    )
+    
+    if test_results:
+        test_loss, test_metrics = test_results
+        print(f"Final test evaluation - Loss: {test_loss:.4f}, Accuracy: {test_metrics.get('accuracy', 0.0):.4f}")
+    else:
+        print("Final test evaluation failed")
     
     print("\nSimulation completed!")
 
