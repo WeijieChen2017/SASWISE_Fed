@@ -6,12 +6,6 @@ This script runs a federated learning simulation based on the SASWISE Fed-101 cl
 import os
 import sys
 
-# Determine the directory containing this script and add it to the path
-# This allows importing modules from the same directory
-script_dir = os.path.dirname(os.path.abspath(__file__))
-if script_dir not in sys.path:
-    sys.path.insert(0, script_dir)
-
 # Import torch and other libraries first
 import torch
 from typing import List, Tuple
@@ -22,10 +16,19 @@ from flwr.server import ServerApp, ServerConfig, ServerAppComponents
 from flwr.server.strategy import FedAvg
 from flwr.simulation import run_simulation
 
-# Import the necessary modules using direct file paths
-# Use direct imports from files in the same directory
-from .task import Net, load_data, test, train  
-from .client_app import FlowerClient
+# Dynamically determine where we are relative to the package and import accordingly
+script_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(script_dir))  # Add parent directory
+
+# Direct absolute imports - avoid relative imports
+try:
+    from saswise_fed_101.task import Net, load_data, test, train
+    from saswise_fed_101.client_app import FlowerClient
+except ImportError:
+    # Fall back to direct imports if package structure doesn't work
+    sys.path.insert(0, script_dir)  # Add current directory
+    from task import Net, load_data, test, train
+    from client_app import FlowerClient
 
 # Configuration
 NUM_CLIENTS = 10
