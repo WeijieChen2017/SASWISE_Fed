@@ -6,6 +6,8 @@ from flwr.server.strategy import FedAvg
 from flwr.simulation import run_simulation
 import json
 import torch
+import numpy as np
+from collections import Counter
 
 from utils2 import *
 
@@ -24,29 +26,70 @@ epochs = config["training"]["epochs"]
 batch_size = config["training"]["batch_size"]
 learning_rate = config["training"]["learning_rate"]
 momentum = config["training"]["momentum"]
+data_fraction = config.get("training", {}).get("data_fraction", 0.8)  # Default to 80% if not specified
 
 trainset = datasets.CIFAR10(
     "./CIFAR10_data/", download=True, train=True, transform=transform
 )
 
+# Calculate correct split sizes that sum to the total dataset length
 total_length = len(trainset)
-split_size = total_length // num_clients
-torch.manual_seed(42)
-train_sets = random_split(trainset, [split_size] * num_clients)
+split_sizes = []
+remaining_samples = total_length
+for i in range(num_clients - 1):
+    # Use equal splits (or we could implement percentage-based splits)
+    size = total_length // num_clients
+    split_sizes.append(size)
+    remaining_samples -= size
+# Add the remaining samples to the last split
+split_sizes.append(remaining_samples)
 
-# Apply exclusions based on config
+print(f"Total dataset size: {total_length}")
+print(f"Split sizes: {split_sizes}, sum: {sum(split_sizes)}")
+
+torch.manual_seed(42)
+train_sets = random_split(trainset, split_sizes)
+
+# Apply exclusions based on config and report client datasets
 for i, client_config in enumerate(config["clients"]):
+    original_size = len(train_sets[i])
+    
+    # Apply the data fraction if needed (e.g., 80% of data)
+    if data_fraction < 1.0:
+        subset_size = int(len(train_sets[i]) * data_fraction)
+        indices = torch.randperm(len(train_sets[i]))[:subset_size]
+        train_sets[i] = Subset(train_sets[i], indices)
+        print(f"Client {i}: Using {data_fraction*100}% of data. Original size: {original_size}, New size: {len(train_sets[i])}")
+    
+    # Count classes before exclusion
+    labels_before = [trainset[train_sets[i][j].item()][1] for j in range(len(train_sets[i]))]
+    class_counts_before = Counter(labels_before)
+    
+    # Apply exclusions
     train_sets[i] = exclude_classes(train_sets[i], excluded_classes=client_config["excluded_classes"])
+    
+    # Count classes after exclusion
+    labels_after = [trainset[train_sets[i][j].item()][1] for j in range(len(train_sets[i]))]
+    class_counts_after = Counter(labels_after)
+    
+    print(f"\nClient {i} dataset report:")
+    print(f"  Original samples: {original_size}")
+    print(f"  After exclusion: {len(train_sets[i])}")
+    print(f"  Excluded classes: {client_config['excluded_classes']}")
+    print(f"  Class distribution before exclusion: {dict(class_counts_before)}")
+    print(f"  Class distribution after exclusion: {dict(class_counts_after)}")
+    print(f"  Classes present: {sorted(class_counts_after.keys())}")
 
 testset = datasets.CIFAR10(
     "./CIFAR10_data/", download=True, train=False, transform=transform
 )
-print("Number of examples in `testset`:", len(testset))
+print("\nNumber of examples in `testset`:", len(testset))
 
 # Create test subsets based on config
 test_subsets = {}
 for subset in config["evaluation"]["test_subsets"]:
     test_subsets[subset["name"]] = include_classes(testset, subset["classes"])
+    print(f"Test subset '{subset['name']}': {len(test_subsets[subset['name']])} samples, classes: {subset['classes']}")
 
 # Sets the parameters of the model
 def set_weights(net, parameters):
