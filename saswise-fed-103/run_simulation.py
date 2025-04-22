@@ -5,8 +5,13 @@ from flwr.server import ServerAppComponents
 from flwr.server.strategy import FedAvg
 from flwr.simulation import run_simulation
 import json
+import torch
 
 from utils2 import *
+
+# Set device
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print(f"Using device: {device}")
 
 # Load configuration
 with open("saswise-fed-103/config.json", "r") as f:
@@ -47,7 +52,7 @@ for subset in config["evaluation"]["test_subsets"]:
 def set_weights(net, parameters):
     params_dict = zip(net.state_dict().keys(), parameters)
     state_dict = OrderedDict(
-        {k: torch.tensor(v) for k, v in params_dict}
+        {k: torch.tensor(v).to(device) for k, v in params_dict}
     )
     net.load_state_dict(state_dict, strict=True)
 
@@ -81,6 +86,7 @@ class FlowerClient(NumPyClient):
         for epoch in range(epochs):
             running_loss = 0.0
             for inputs, labels in train_loader:
+                inputs, labels = inputs.to(device), labels.to(device)
                 optimizer.zero_grad()
                 outputs = model(inputs)
                 loss = criterion(outputs, labels)
@@ -96,7 +102,7 @@ class FlowerClient(NumPyClient):
     
 # Client function
 def client_fn(context: Context) -> Client:
-    net = ResNet20()
+    net = ResNet20().to(device)
     partition_id = int(context.node_config["partition-id"])
     client_train = train_sets[int(partition_id)]
     client_test = testset
@@ -105,7 +111,7 @@ def client_fn(context: Context) -> Client:
 client = ClientApp(client_fn)
 
 def evaluate(server_round, parameters, config):
-    net = ResNet20()
+    net = ResNet20().to(device)
     set_weights(net, parameters)
 
     _, accuracy = evaluate_model(net, testset)
@@ -121,7 +127,7 @@ def evaluate(server_round, parameters, config):
         cm = compute_confusion_matrix(net, testset)
         plot_confusion_matrix(cm, "Final Global Model")
 
-net = ResNet20()
+net = ResNet20().to(device)
 params = ndarrays_to_parameters(get_weights(net))
 
 def server_fn(context: Context):

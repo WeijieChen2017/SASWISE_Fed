@@ -135,6 +135,7 @@ def train_model(model, train_set):
 
 
 def evaluate_model(model, test_set):
+    device = next(model.parameters()).device  # Get device from model
     model.eval()
     correct = 0
     total = 0
@@ -145,6 +146,7 @@ def evaluate_model(model, test_set):
 
     with torch.no_grad():
         for inputs, labels in test_loader:
+            inputs, labels = inputs.to(device), labels.to(device)
             outputs = model(inputs)
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
@@ -208,6 +210,7 @@ def include_classes(dataset, included_classes):
 
 
 def compute_confusion_matrix(model, testset):
+    device = next(model.parameters()).device  # Get device from model
     # Initialize lists to store true labels and predicted labels
     true_labels = []
     predicted_labels = []
@@ -215,7 +218,8 @@ def compute_confusion_matrix(model, testset):
     # Iterate over the test set to get predictions
     for image, label in testset:
         # Forward pass through the model to get predictions
-        output = model(image.unsqueeze(0))  # Add batch dimension
+        image = image.unsqueeze(0).to(device)  # Add batch dimension and move to device
+        output = model(image)
         _, predicted = torch.max(output, 1)
 
         # Append true and predicted labels to lists
