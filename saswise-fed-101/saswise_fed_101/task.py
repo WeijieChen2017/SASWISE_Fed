@@ -7,8 +7,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 from flwr_datasets import FederatedDataset
 from flwr_datasets.partitioner import IidPartitioner
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset, Dataset
 from torchvision.transforms import Compose, Normalize, ToTensor
+import torchvision
+import numpy as np
 
 
 class Net(nn.Module):
@@ -35,7 +37,99 @@ class Net(nn.Module):
 fds = None  # Cache FederatedDataset
 
 
+# Wrapper around torchvision CIFAR-10 to match interface for flwr_datasets
+class CIFAR10Wrapper(Dataset):
+    def __init__(self, dataset):
+        self.dataset = dataset
+        
+    def __getitem__(self, index):
+        img, label = self.dataset[index]
+        return {"img": img, "label": label}
+    
+    def __len__(self):
+        return len(self.dataset)
+
+
 def load_data(partition_id: int, num_partitions: int):
+    """Load partition CIFAR10 data using torchvision to avoid SSL issues."""
+    # Define transforms
+    transforms = Compose([
+        ToTensor(),
+        Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+    ])
+    
+    # Load the dataset from torchvision (will be cached automatically)
+    try:
+        train_dataset = torchvision.datasets.CIFAR10(
+            root="./data", 
+            train=True, 
+            download=True,
+            transform=transforms
+        )
+        test_dataset = torchvision.datasets.CIFAR10(
+            root="./data", 
+            train=False, 
+            download=True,
+            transform=transforms
+        )
+    except Exception as e:
+        print(f"Error downloading CIFAR-10 with SSL verification: {e}")
+        # Try again with SSL verification disabled as a fallback
+        import ssl
+        old_https_context = ssl._create_default_https_context
+        ssl._create_default_https_context = ssl._create_unverified_context
+        try:
+            train_dataset = torchvision.datasets.CIFAR10(
+                root="./data", 
+                train=True, 
+                download=True, 
+                transform=transforms
+            )
+            test_dataset = torchvision.datasets.CIFAR10(
+                root="./data", 
+                train=False, 
+                download=True, 
+                transform=transforms
+            )
+        finally:
+            # Restore the original SSL context
+            ssl._create_default_https_context = old_https_context
+    
+    # Create partitions for federated learning
+    n_train = len(train_dataset)
+    samples_per_partition = n_train // num_partitions
+    
+    # Determine the range for this partition
+    start_idx = partition_id * samples_per_partition
+    end_idx = min((partition_id + 1) * samples_per_partition, n_train)
+    
+    # Create subset for this partition
+    partition_train = Subset(train_dataset, range(start_idx, end_idx))
+    
+    # Further split into train and validation (80/20)
+    partition_size = len(partition_train)
+    train_size = int(0.8 * partition_size)
+    val_size = partition_size - train_size
+    
+    train_indices = list(range(train_size))
+    val_indices = list(range(train_size, partition_size))
+    
+    train_subset = Subset(partition_train, train_indices)
+    val_subset = Subset(partition_train, val_indices)
+    
+    # Wrap in our CIFAR10Wrapper to match the expected interface
+    wrapped_train = CIFAR10Wrapper(train_subset)
+    wrapped_val = CIFAR10Wrapper(val_subset)
+    
+    # Create data loaders
+    trainloader = DataLoader(wrapped_train, batch_size=32, shuffle=True)
+    valloader = DataLoader(wrapped_val, batch_size=32)
+    
+    return trainloader, valloader
+
+
+# Original function using flwr_datasets kept for reference
+def load_data_original(partition_id: int, num_partitions: int):
     """Load partition CIFAR10 data."""
     # Only initialize `FederatedDataset` once
     global fds
