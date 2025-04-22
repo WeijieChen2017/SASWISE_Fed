@@ -32,74 +32,44 @@ trainset = datasets.CIFAR10(
     "./CIFAR10_data/", download=True, train=True, transform=transform
 )
 
-# Calculate correct split sizes that sum to the total dataset length
-total_length = len(trainset)
-split_sizes = []
-remaining_samples = total_length
-for i in range(num_clients - 1):
-    # Use equal splits (or we could implement percentage-based splits)
-    size = total_length // num_clients
-    split_sizes.append(size)
-    remaining_samples -= size
-# Add the remaining samples to the last split
-split_sizes.append(remaining_samples)
+print(f"Total dataset size: {len(trainset)}")
 
-print(f"Total dataset size: {total_length}")
-print(f"Split sizes: {split_sizes}, sum: {sum(split_sizes)}")
-
-torch.manual_seed(42)
-train_sets = random_split(trainset, split_sizes)
-
-# Helper function to get labels from nested datasets
-def get_label_from_subset(dataset, idx):
-    """Extract label from potentially nested Subset datasets"""
-    if isinstance(idx, int):
-        # Direct index into dataset
-        return dataset[idx][1]
-    else:
-        # For Subset objects, we need to navigate through the dataset hierarchy
-        current_dataset = dataset
-        current_idx = idx
-        while hasattr(current_dataset, 'dataset'):
-            if hasattr(current_idx, 'item'):
-                current_idx = current_idx.item()  # Convert tensor to int if needed
-            if isinstance(current_dataset, Subset):
-                if isinstance(current_idx, int):
-                    current_idx = current_dataset.indices[current_idx]
-                current_dataset = current_dataset.dataset
-            else:
-                break
-        return current_dataset[current_idx][1]
-
-# Apply exclusions based on config and report client datasets
+# Prepare client datasets - each client starts with the full dataset
+train_sets = []
 for i, client_config in enumerate(config["clients"]):
-    original_size = len(train_sets[i])
+    # Create a copy of the full dataset for this client
+    client_dataset = trainset
     
     # Apply the data fraction if needed (e.g., 80% of data)
     if data_fraction < 1.0:
-        subset_size = int(len(train_sets[i]) * data_fraction)
-        indices = torch.randperm(len(train_sets[i]))[:subset_size]
-        train_sets[i] = Subset(train_sets[i], indices)
-        print(f"Client {i}: Using {data_fraction*100}% of data. Original size: {original_size}, New size: {len(train_sets[i])}")
+        full_size = len(client_dataset)
+        subset_size = int(full_size * data_fraction)
+        # Use a different random seed for each client
+        torch.manual_seed(42 + i)  
+        indices = torch.randperm(full_size)[:subset_size]
+        client_dataset = Subset(client_dataset, indices)
+        print(f"Client {i}: Using {data_fraction*100}% of data. Size after fraction: {len(client_dataset)}")
     
-    # Count classes before exclusion
-    labels_before = [get_label_from_subset(trainset, train_sets[i][j]) for j in range(len(train_sets[i]))]
-    class_counts_before = Counter(labels_before)
+    # Apply exclusions based on config
+    client_dataset = exclude_classes(client_dataset, excluded_classes=client_config["excluded_classes"])
+    print(f"Client {i}: Size after excluding classes {client_config['excluded_classes']}: {len(client_dataset)}")
     
-    # Apply exclusions
-    train_sets[i] = exclude_classes(train_sets[i], excluded_classes=client_config["excluded_classes"])
+    # Analyze class distribution
+    labels = []
+    for j in range(len(client_dataset)):
+        # Get the label directly from the dataset item
+        label = client_dataset[j][1]
+        labels.append(label)
     
-    # Count classes after exclusion
-    labels_after = [get_label_from_subset(trainset, train_sets[i][j]) for j in range(len(train_sets[i]))]
-    class_counts_after = Counter(labels_after)
+    class_counts = Counter(labels)
     
     print(f"\nClient {i} dataset report:")
-    print(f"  Original samples: {original_size}")
-    print(f"  After exclusion: {len(train_sets[i])}")
+    print(f"  Final dataset size: {len(client_dataset)}")
     print(f"  Excluded classes: {client_config['excluded_classes']}")
-    print(f"  Class distribution before exclusion: {dict(class_counts_before)}")
-    print(f"  Class distribution after exclusion: {dict(class_counts_after)}")
-    print(f"  Classes present: {sorted(class_counts_after.keys())}")
+    print(f"  Class distribution: {dict(class_counts)}")
+    print(f"  Classes present: {sorted(class_counts.keys())}")
+    
+    train_sets.append(client_dataset)
 
 testset = datasets.CIFAR10(
     "./CIFAR10_data/", download=True, train=False, transform=transform
