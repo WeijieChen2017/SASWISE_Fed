@@ -14,7 +14,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 # Load configuration
-with open("saswise-fed-103/config.json", "r") as f:
+with open("config.json", "r") as f:
     config = json.load(f)
 
 # Training parameters
