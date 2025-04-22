@@ -9,10 +9,11 @@ from saswise_fed_101.task import get_weights, load_data, set_weights, test, trai
 
 # Define Flower Client and client_fn
 class FlowerClient(NumPyClient):
-    def __init__(self, net, trainloader, valloader, local_epochs):
+    def __init__(self, net, trainloader, valloader, testloader, local_epochs):
         self.net = net
         self.trainloader = trainloader
         self.valloader = valloader
+        self.testloader = testloader
         self.local_epochs = local_epochs
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.net.to(self.device)
@@ -25,16 +26,32 @@ class FlowerClient(NumPyClient):
             self.local_epochs,
             self.device,
         )
+        
+        # Evaluate on validation set after training
+        val_loss, val_accuracy = test(self.net, self.valloader, self.device)
+        
         return (
             get_weights(self.net),
             len(self.trainloader.dataset),
-            {"train_loss": train_loss},
+            {
+                "train_loss": train_loss,
+                "val_loss": val_loss,
+                "val_accuracy": val_accuracy
+            },
         )
 
     def evaluate(self, parameters, config):
         set_weights(self.net, parameters)
-        loss, accuracy = test(self.net, self.valloader, self.device)
-        return loss, len(self.valloader.dataset), {"accuracy": accuracy}
+        
+        # By default, evaluate on validation set for regular federated evaluation
+        if config.get("eval_on", "val") == "test":
+            # If specifically asked to evaluate on test set
+            loss, accuracy = test(self.net, self.testloader, self.device)
+            return loss, len(self.testloader.dataset), {"accuracy": accuracy, "dataset": "test"}
+        else:
+            # Regular evaluation on validation set
+            loss, accuracy = test(self.net, self.valloader, self.device)
+            return loss, len(self.valloader.dataset), {"accuracy": accuracy, "dataset": "val"}
 
 
 def client_fn(context: Context):
@@ -53,10 +70,10 @@ def client_fn(context: Context):
     batch_size = context.run_config.get("batch-size", 32)
     local_epochs = context.run_config.get("local-epochs", 10)
     
-    trainloader, valloader = load_data(partition_id, num_partitions, batch_size=batch_size)
+    trainloader, valloader, testloader = load_data(partition_id, num_partitions, batch_size=batch_size)
 
     # Return Client instance
-    return FlowerClient(net, trainloader, valloader, local_epochs).to_client()
+    return FlowerClient(net, trainloader, valloader, testloader, local_epochs).to_client()
 
 
 # Flower ClientApp

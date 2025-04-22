@@ -106,26 +106,31 @@ def load_data(partition_id: int, num_partitions: int, batch_size: int = 32):
     # Create subset for this partition
     partition_train = Subset(train_dataset, range(start_idx, end_idx))
     
-    # Further split into train and validation (80/20)
+    # Further split into train, validation, and test (70/15/15)
     partition_size = len(partition_train)
-    train_size = int(0.8 * partition_size)
-    val_size = partition_size - train_size
+    train_size = int(0.7 * partition_size)
+    val_size = int(0.15 * partition_size)
+    test_size = partition_size - train_size - val_size
     
     train_indices = list(range(train_size))
-    val_indices = list(range(train_size, partition_size))
+    val_indices = list(range(train_size, train_size + val_size))
+    test_indices = list(range(train_size + val_size, partition_size))
     
     train_subset = Subset(partition_train, train_indices)
     val_subset = Subset(partition_train, val_indices)
+    test_subset = Subset(partition_train, test_indices)
     
     # Wrap in our CIFAR10Wrapper to match the expected interface
     wrapped_train = CIFAR10Wrapper(train_subset)
     wrapped_val = CIFAR10Wrapper(val_subset)
+    wrapped_test = CIFAR10Wrapper(test_subset)
     
     # Create data loaders with specified batch size
     trainloader = DataLoader(wrapped_train, batch_size=batch_size, shuffle=True)
     valloader = DataLoader(wrapped_val, batch_size=batch_size)
+    testloader = DataLoader(wrapped_test, batch_size=batch_size)
     
-    return trainloader, valloader
+    return trainloader, valloader, testloader
 
 
 # Original function using flwr_datasets kept for reference
