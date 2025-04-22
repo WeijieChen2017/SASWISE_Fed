@@ -34,6 +34,9 @@ def parse_args():
 # This avoids Python package/import complexities in different environments
 def run_simulation():
     """Standalone implementation to run the simulation"""
+    # Global variable declaration must come first - before any assignments
+    global EVAL_MODE
+    
     print("Setting up simulation environment...")
     
     # Parse command line arguments
@@ -57,9 +60,6 @@ def run_simulation():
     # Import saswise modules
     from saswise_fed_101.task import Net, load_data, test, train, get_weights
     from saswise_fed_101.client_app import FlowerClient
-    
-    # Declare global variables
-    global EVAL_MODE
     
     # Add ResNet support
     class ResNetCIFAR10(torch.nn.Module):
@@ -85,6 +85,8 @@ def run_simulation():
     USE_RESNET = args.use_resnet
     BATCH_SIZE = args.batch_size
     MODEL_TYPE = "resnet" if USE_RESNET else "cnn"
+    
+    # Initialize global evaluation mode
     EVAL_MODE = "val"  # Default evaluation mode ("val" or "test")
     
     # Storage for client-specific training losses
