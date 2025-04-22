@@ -97,18 +97,21 @@ class FederatedSimulation:
     
     def setup_resnet_model(self):
         # Add ResNet support as a class
-        class ResNetCIFAR10(self.torch.nn.Module):
+        # Get a reference to torch to use in the class
+        torch = self.torch
+        import torchvision.models as models
+        
+        class ResNetCIFAR10(torch.nn.Module):
             def __init__(self):
                 super(ResNetCIFAR10, self).__init__()
-                # Use a pre-trained ResNet model but modify for CIFAR-10
-                import torchvision.models as models
-                self.model = models.resnet18(pretrained=False)
+                # Use a ResNet model with no pre-trained weights
+                self.model = models.resnet18(weights=None)
                 # Modify the first conv layer to accept 3-channel 32x32 inputs
-                self.model.conv1 = self.torch.nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
+                self.model.conv1 = torch.nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
                 # Remove maxpool as CIFAR-10 images are much smaller than ImageNet
-                self.model.maxpool = self.torch.nn.Identity()
+                self.model.maxpool = torch.nn.Identity()
                 # Adjust the final layer for 10 classes
-                self.model.fc = self.torch.nn.Linear(self.model.fc.in_features, 10)
+                self.model.fc = torch.nn.Linear(self.model.fc.in_features, 10)
                 
             def forward(self, x):
                 return self.model(x)
