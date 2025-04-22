@@ -32,7 +32,7 @@ except ImportError:
 
 # Configuration
 NUM_CLIENTS = 10
-NUM_ROUNDS = 1000
+NUM_ROUNDS = 10000
 LOCAL_EPOCHS = 10
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f"Training on {DEVICE}")
