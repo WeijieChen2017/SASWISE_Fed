@@ -20,7 +20,7 @@ def run_simulation():
     # Import the required modules directly
     import torch
     from flwr.client import ClientApp
-    from flwr.common import Metrics, Context
+    from flwr.common import Metrics, Context, ndarrays_to_parameters
     from flwr.server import ServerApp, ServerConfig, ServerAppComponents
     from flwr.server.strategy import FedAvg
     from flwr.simulation import run_simulation
@@ -31,7 +31,7 @@ def run_simulation():
         sys.path.insert(0, saswise_path)
     
     # Import saswise modules
-    from saswise_fed_101.task import Net, load_data, test, train
+    from saswise_fed_101.task import Net, load_data, test, train, get_weights
     from saswise_fed_101.client_app import FlowerClient
     
     # Configuration
@@ -68,9 +68,14 @@ def run_simulation():
         examples = [num_examples for num_examples, _ in metrics]
         return {"accuracy": sum(accuracies) / sum(examples)}
     
+    # Initialize model parameters - IMPORTANT to fix the model initialization issue
+    initial_model = Net()
+    initial_parameters = get_weights(initial_model)
+    initial_parameters = ndarrays_to_parameters(initial_parameters)
+    
     # Define the server function that returns ServerAppComponents
     def server_fn(context: Context) -> ServerAppComponents:
-        # Create strategy
+        # Create strategy with initial parameters
         strategy = FedAvg(
             fraction_fit=1.0,
             fraction_evaluate=0.5,
@@ -78,6 +83,7 @@ def run_simulation():
             min_evaluate_clients=5,
             min_available_clients=NUM_CLIENTS,
             evaluate_metrics_aggregation_fn=weighted_average,
+            initial_parameters=initial_parameters,  # Use initialized parameters
         )
         
         # Configure server
