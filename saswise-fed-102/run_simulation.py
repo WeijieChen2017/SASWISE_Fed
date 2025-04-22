@@ -37,7 +37,7 @@ def run_simulation():
     from saswise_fed_102.client_app import FlowerClient
     
     # Configuration
-    NUM_CLIENTS = 6  # Changed from 10 to 6 clients
+    NUM_CLIENTS = 10
     NUM_ROUNDS = 100  # Increased to 100 epochs
     LOCAL_EPOCHS = 1
     
@@ -135,10 +135,10 @@ def run_simulation():
     def server_fn(context: Context) -> ServerAppComponents:
         # Create strategy with initial parameters
         strategy = FedAvg(
-            fraction_fit=1.0,  # Ensure all clients participate in training
-            fraction_evaluate=1.0,  # Ensure all clients participate in evaluation
-            min_fit_clients=NUM_CLIENTS,  # All clients must train in each round
-            min_evaluate_clients=NUM_CLIENTS,  # All clients must evaluate in each round
+            fraction_fit=1.0,
+            fraction_evaluate=0.5,
+            min_fit_clients=NUM_CLIENTS,
+            min_evaluate_clients=5,
             min_available_clients=NUM_CLIENTS,
             evaluate_metrics_aggregation_fn=weighted_average,
             initial_parameters=initial_parameters,  # Use initialized parameters
@@ -184,15 +184,10 @@ def run_simulation():
     
     # Run simulation
     print(f"Starting 100-epoch local simulation with {NUM_CLIENTS} clients on {DEVICE}...")
-    
-    # Make sure client_losses is properly initialized with empty lists for each client ID
-    for client_id in range(NUM_CLIENTS):
-        client_losses[client_id] = []
-        
     run_simulation(
         server_app=server,
         client_app=client,
-        num_supernodes=NUM_CLIENTS,  # Ensure consistent number of clients
+        num_supernodes=NUM_CLIENTS,
         backend_config=backend_config,
     )
     
@@ -206,8 +201,6 @@ def run_simulation():
             final_loss = losses[-1]
             improvement = initial_loss - final_loss
             print(f"Client {client_id:7d} | {len(losses):6d} | {initial_loss:12.4f} | {final_loss:10.4f} | {improvement:11.4f}")
-        else:
-            print(f"Client {client_id:7d} | No training data recorded")
     
     print("\nSimulation completed!")
 
