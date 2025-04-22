@@ -20,6 +20,7 @@ def run_simulation():
     # Import the required modules directly
     import torch
     from flwr.client import ClientApp
+    from flwr.common import Metrics, Context
     from flwr.server import ServerApp, ServerConfig, ServerAppComponents
     from flwr.server.strategy import FedAvg
     from flwr.simulation import run_simulation
@@ -56,23 +57,27 @@ def run_simulation():
         examples = [num_examples for num_examples, _ in metrics]
         return {"accuracy": sum(accuracies) / sum(examples)}
     
-    # Create strategy
-    strategy = FedAvg(
-        fraction_fit=1.0,
-        fraction_evaluate=0.5,
-        min_fit_clients=NUM_CLIENTS,
-        min_evaluate_clients=5,
-        min_available_clients=NUM_CLIENTS,
-        evaluate_metrics_aggregation_fn=weighted_average,
-    )
+    # Define the server function that returns ServerAppComponents
+    def server_fn(context: Context) -> ServerAppComponents:
+        # Create strategy
+        strategy = FedAvg(
+            fraction_fit=1.0,
+            fraction_evaluate=0.5,
+            min_fit_clients=NUM_CLIENTS,
+            min_evaluate_clients=5,
+            min_available_clients=NUM_CLIENTS,
+            evaluate_metrics_aggregation_fn=weighted_average,
+        )
+        
+        # Configure server
+        config = ServerConfig(num_rounds=NUM_ROUNDS)
+        
+        # Return the components
+        return ServerAppComponents(strategy=strategy, config=config)
     
-    # Configure server
-    config = ServerConfig(num_rounds=NUM_ROUNDS)
-    
-    # Create ClientApp and ServerApp
+    # Create ClientApp and ServerApp properly
     client = ClientApp(client_fn=client_fn)
-    server = ServerAppComponents(strategy=strategy, config=config)
-    server = ServerApp(lambda _: server)
+    server = ServerApp(server_fn=server_fn)
     
     # Backend configuration
     backend_config = {"client_resources": {"num_cpus": 1, "num_gpus": 0.0}}
