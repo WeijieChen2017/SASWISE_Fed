@@ -58,6 +58,9 @@ def run_simulation():
     from saswise_fed_101.task import Net, load_data, test, train, get_weights
     from saswise_fed_101.client_app import FlowerClient
     
+    # Declare global variables
+    global EVAL_MODE
+    
     # Add ResNet support
     class ResNetCIFAR10(torch.nn.Module):
         def __init__(self):
@@ -81,6 +84,8 @@ def run_simulation():
     LOCAL_EPOCHS = args.local_epochs
     USE_RESNET = args.use_resnet
     BATCH_SIZE = args.batch_size
+    MODEL_TYPE = "resnet" if USE_RESNET else "cnn"
+    EVAL_MODE = "val"  # Default evaluation mode ("val" or "test")
     
     # Storage for client-specific training losses
     client_losses = defaultdict(list)
@@ -155,23 +160,9 @@ def run_simulation():
         def evaluate(self, parameters, config):
             safe_set_weights(self.net, parameters)
             
-            # By default, evaluate on validation set for regular federated evaluation
-            # The config here is from server.evaluate_round, not node_config
-            # Get eval_on from node_config (stored in context) if available
-            eval_on = "val"
-            
-            # Try to get the partition ID for this client
-            try:
-                from flwr.common.context import Context
-                ctx = Context.get()
-                if ctx and ctx.node_config:
-                    eval_on = ctx.node_config.get("eval_on", "val")
-            except Exception:
-                # If Context.get() fails, use the old approach from config
-                eval_on = config.get("eval_on", "val")
-            
-            if eval_on == "test":
-                # If specifically asked to evaluate on test set
+            # Use the global EVAL_MODE to determine which dataset to evaluate on
+            if EVAL_MODE == "test":
+                # Evaluate on test set
                 loss, accuracy = test(self.net, self.testloader, self.device)
                 return loss, len(self.testloader.dataset), {"accuracy": accuracy, "dataset": "test", "client_id": self.client_id}
             else:
@@ -179,18 +170,47 @@ def run_simulation():
                 loss, accuracy = test(self.net, self.valloader, self.device)
                 return loss, len(self.valloader.dataset), {"accuracy": accuracy, "dataset": "val", "client_id": self.client_id}
     
+    # Create a ray_init_args dictionary with config values
+    ray_init_args = {
+        "include_dashboard": False,
+        "ignore_reinit_error": True,
+        "_memory": 1024 * 1024 * 1024,  # 1GB memory limit per client
+        "_redis_max_memory": 1024 * 1024 * 1024,  # 1GB for redis
+        # Add these as custom resources that will be accessible in the context
+        "resources": {
+            "model_type": MODEL_TYPE,
+            "batch_size": str(BATCH_SIZE),
+            "local_epochs": str(LOCAL_EPOCHS)
+        }
+    }
+    
+    # Define the server function that returns ServerAppComponents
+    def server_fn(context: Context) -> ServerAppComponents:
+        # Create strategy with initial parameters
+        strategy = FedAvg(
+            fraction_fit=1.0,
+            fraction_evaluate=0.5,
+            min_fit_clients=NUM_CLIENTS,
+            min_evaluate_clients=5,
+            min_available_clients=NUM_CLIENTS,
+            evaluate_metrics_aggregation_fn=weighted_average,
+            initial_parameters=initial_parameters,  # Use initialized parameters
+        )
+        
+        # Configure server
+        config = ServerConfig(num_rounds=NUM_ROUNDS)
+        
+        # Return the components
+        return ServerAppComponents(strategy=strategy, config=config)
+    
     # Define client_fn with client ID tracking
     def client_fn(context):
         # Get the client ID from the context
         partition_id = context.node_config["partition-id"]
         
-        # Check if we're in evaluation and a model_type was specified
-        config_model_type = context.node_config.get("model_type", MODEL_TYPE)
-        use_resnet = config_model_type == "resnet"
-        
-        # Get batch size and local epochs from node_config
-        batch_size = context.node_config.get("batch_size", BATCH_SIZE)
-        local_epochs = context.node_config.get("local_epochs", LOCAL_EPOCHS)
+        # We can't pass complex configs in older Flower versions
+        # Always use the global settings
+        use_resnet = USE_RESNET
         
         # Load model and ensure it's on the right device
         if use_resnet:
@@ -201,7 +221,7 @@ def run_simulation():
             print(f"Client {partition_id} using Simple CNN model")
         
         # Load data with train/val/test splits
-        trainloader, valloader, testloader = load_data(partition_id, NUM_CLIENTS, batch_size=batch_size)
+        trainloader, valloader, testloader = load_data(partition_id, NUM_CLIENTS, batch_size=BATCH_SIZE)
         
         # Return client with device specification and client ID
         return DetailedFlowerClient(
@@ -209,7 +229,7 @@ def run_simulation():
             trainloader, 
             valloader,
             testloader,
-            local_epochs, 
+            LOCAL_EPOCHS, 
             client_id=partition_id
         ).to_client()
     
@@ -256,28 +276,6 @@ def run_simulation():
     initial_parameters = get_weights(initial_model)
     initial_parameters = ndarrays_to_parameters(initial_parameters)
     
-    # Save the model type to ensure consistency during evaluation
-    MODEL_TYPE = "resnet" if USE_RESNET else "cnn"
-    
-    # Define the server function that returns ServerAppComponents
-    def server_fn(context: Context) -> ServerAppComponents:
-        # Create strategy with initial parameters
-        strategy = FedAvg(
-            fraction_fit=1.0,
-            fraction_evaluate=0.5,
-            min_fit_clients=NUM_CLIENTS,
-            min_evaluate_clients=5,
-            min_available_clients=NUM_CLIENTS,
-            evaluate_metrics_aggregation_fn=weighted_average,
-            initial_parameters=initial_parameters,  # Use initialized parameters
-        )
-        
-        # Configure server
-        config = ServerConfig(num_rounds=NUM_ROUNDS)
-        
-        # Return the components
-        return ServerAppComponents(strategy=strategy, config=config)
-    
     # Create ClientApp and ServerApp properly
     client = ClientApp(client_fn=client_fn)
     server = ServerApp(server_fn=server_fn)
@@ -299,16 +297,11 @@ def run_simulation():
                 "num_gpus": 0.1  # Server also needs some GPU resources
             },
             # Ray configuration for better GPU sharing
-            "ray_init_args": {
-                "include_dashboard": False,
-                "ignore_reinit_error": True,
-                "_memory": 1024 * 1024 * 1024,  # 1GB memory limit per client
-                "_redis_max_memory": 1024 * 1024 * 1024,  # 1GB for redis
-            }
+            "ray_init_args": ray_init_args
         }
     else:
         # CPU-only configuration
-        backend_config = {"client_resources": {"num_cpus": 1, "num_gpus": 0.0}}
+        backend_config = {"client_resources": {"num_cpus": 1, "num_gpus": 0.0}, "ray_init_args": ray_init_args}
     
     # Add logging for training/validation curves
     import matplotlib.pyplot as plt
@@ -356,26 +349,12 @@ def run_simulation():
     # Run simulation
     print(f"Starting {NUM_ROUNDS}-epoch local simulation with {NUM_CLIENTS} clients on {DEVICE}...")
     
-    # Set node configs for each client
-    client_node_configs = []
-    for i in range(NUM_CLIENTS):
-        # Pass the model type in the node config instead
-        node_config = {
-            "partition-id": i,
-            "model_type": MODEL_TYPE,
-            "batch_size": BATCH_SIZE,
-            "local_epochs": LOCAL_EPOCHS
-        }
-        client_node_configs.append(node_config)
-    
-    # Remove client_run_config as it's not supported in this version
+    # Remove client_node_configs as it's not supported in this version
     run_simulation(
         server_app=server,
         client_app=client,
         num_supernodes=NUM_CLIENTS,
-        backend_config=backend_config,
-        # Pass model type and other settings via node_configs
-        client_node_configs=client_node_configs
+        backend_config=backend_config
     )
     
     # Print final loss summary for all clients
@@ -395,22 +374,16 @@ def run_simulation():
     
     # Add a final test evaluation
     print("\n=== Running final test evaluation ===")
-    # Create a special evaluation config for test set
+    
     try:
-        # Set up node config for test evaluation
-        test_node_configs = []
-        for i in range(NUM_CLIENTS):
-            test_config = {
-                "partition-id": i,
-                "model_type": MODEL_TYPE,
-                "eval_on": "test"
-            }
-            test_node_configs.append(test_config)
-            
+        # Since we can't easily pass configs to clients in this version of Flower,
+        # we'll just set a global flag for test evaluation
+        global EVAL_MODE
+        EVAL_MODE = "test"
+        
         test_results = server.evaluate_round(
             server_round=NUM_ROUNDS + 1,  # Use a round number after training
-            timeout=None,
-            node_configs=test_node_configs  # Use node_configs instead of client_instructions
+            timeout=None
         )
         
         if test_results:
@@ -425,6 +398,9 @@ def run_simulation():
                 }, f, indent=4)
         else:
             print("Final test evaluation failed")
+            
+        # Reset the evaluation mode
+        EVAL_MODE = "val"
     except Exception as e:
         print(f"Error during final evaluation: {str(e)}")
         print("This may be due to model architecture mismatch. Try rerunning with the same model type.")
