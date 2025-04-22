@@ -50,6 +50,27 @@ print(f"Split sizes: {split_sizes}, sum: {sum(split_sizes)}")
 torch.manual_seed(42)
 train_sets = random_split(trainset, split_sizes)
 
+# Helper function to get labels from nested datasets
+def get_label_from_subset(dataset, idx):
+    """Extract label from potentially nested Subset datasets"""
+    if isinstance(idx, int):
+        # Direct index into dataset
+        return dataset[idx][1]
+    else:
+        # For Subset objects, we need to navigate through the dataset hierarchy
+        current_dataset = dataset
+        current_idx = idx
+        while hasattr(current_dataset, 'dataset'):
+            if hasattr(current_idx, 'item'):
+                current_idx = current_idx.item()  # Convert tensor to int if needed
+            if isinstance(current_dataset, Subset):
+                if isinstance(current_idx, int):
+                    current_idx = current_dataset.indices[current_idx]
+                current_dataset = current_dataset.dataset
+            else:
+                break
+        return current_dataset[current_idx][1]
+
 # Apply exclusions based on config and report client datasets
 for i, client_config in enumerate(config["clients"]):
     original_size = len(train_sets[i])
@@ -62,14 +83,14 @@ for i, client_config in enumerate(config["clients"]):
         print(f"Client {i}: Using {data_fraction*100}% of data. Original size: {original_size}, New size: {len(train_sets[i])}")
     
     # Count classes before exclusion
-    labels_before = [trainset[train_sets[i][j].item()][1] for j in range(len(train_sets[i]))]
+    labels_before = [get_label_from_subset(trainset, train_sets[i][j]) for j in range(len(train_sets[i]))]
     class_counts_before = Counter(labels_before)
     
     # Apply exclusions
     train_sets[i] = exclude_classes(train_sets[i], excluded_classes=client_config["excluded_classes"])
     
     # Count classes after exclusion
-    labels_after = [trainset[train_sets[i][j].item()][1] for j in range(len(train_sets[i]))]
+    labels_after = [get_label_from_subset(trainset, train_sets[i][j]) for j in range(len(train_sets[i]))]
     class_counts_after = Counter(labels_after)
     
     print(f"\nClient {i} dataset report:")
