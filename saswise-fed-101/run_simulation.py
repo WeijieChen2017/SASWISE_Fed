@@ -24,6 +24,8 @@ def run_simulation():
     from flwr.server import ServerApp, ServerConfig, ServerAppComponents
     from flwr.server.strategy import FedAvg
     from flwr.simulation import run_simulation
+    import numpy as np
+    from collections import defaultdict
     
     # Add saswise_fed_101 to the Python path
     saswise_path = os.path.join(package_root, 'saswise_fed_101')
@@ -36,8 +38,11 @@ def run_simulation():
     
     # Configuration
     NUM_CLIENTS = 10
-    NUM_ROUNDS = 5
+    NUM_ROUNDS = 100  # Increased to 100 epochs
     LOCAL_EPOCHS = 1
+    
+    # Storage for client-specific training losses
+    client_losses = defaultdict(list)
     
     # GPU setup for local simulation
     DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -50,23 +55,76 @@ def run_simulation():
         if hasattr(torch.backends, 'cudnn'):
             torch.backends.cudnn.benchmark = True
     
-    # Define client_fn
+    # Custom FlowerClient that logs training loss
+    class DetailedFlowerClient(FlowerClient):
+        def __init__(self, net, trainloader, valloader, local_epochs, client_id):
+            super().__init__(net, trainloader, valloader, local_epochs)
+            self.client_id = client_id
+            
+        def fit(self, parameters, config):
+            set_weights(self.net, parameters)
+            train_loss = train(
+                self.net,
+                self.trainloader,
+                self.local_epochs,
+                self.device,
+            )
+            
+            # Save and print client-specific loss
+            client_losses[self.client_id].append(train_loss)
+            print(f"Client {self.client_id} - Round {len(client_losses[self.client_id])} - Loss: {train_loss:.4f}")
+            
+            return (
+                get_weights(self.net),
+                len(self.trainloader.dataset),
+                {"train_loss": train_loss, "client_id": self.client_id},
+            )
+    
+    # Define client_fn with client ID tracking
     def client_fn(context):
+        # Get the client ID from the context
+        partition_id = context.node_config["partition-id"]
+        
         # Load model and ensure it's on the right device
         net = Net().to(DEVICE)
         
         # Load data
-        partition_id = context.node_config["partition-id"]
         trainloader, valloader = load_data(partition_id, NUM_CLIENTS)
         
-        # Return client with device specification
-        return FlowerClient(net, trainloader, valloader, LOCAL_EPOCHS).to_client()
+        # Return client with device specification and client ID
+        return DetailedFlowerClient(
+            net, 
+            trainloader, 
+            valloader, 
+            LOCAL_EPOCHS, 
+            client_id=partition_id
+        ).to_client()
     
     # Define weighted_average
     def weighted_average(metrics):
+        # Extract client-specific metrics
+        client_metrics = {}
+        for num_examples, met in metrics:
+            if "client_id" in met:
+                client_id = met["client_id"]
+                if "train_loss" in met:
+                    loss = met["train_loss"]
+                    client_metrics[client_id] = loss
+        
+        # Compute the standard metrics
         accuracies = [num_examples * m["accuracy"] for num_examples, m in metrics]
         examples = [num_examples for num_examples, _ in metrics]
+        
+        # Print client metrics
+        print("\n=== Client Training Losses for this round ===")
+        for client_id, loss in sorted(client_metrics.items()):
+            print(f"Client {client_id}: Loss = {loss:.4f}")
+        print("============================================\n")
+        
         return {"accuracy": sum(accuracies) / sum(examples)}
+    
+    # Import task's set_weights to use in DetailedFlowerClient
+    from saswise_fed_101.task import set_weights
     
     # Initialize model parameters - IMPORTANT to fix the model initialization issue
     initial_model = Net()
@@ -125,14 +183,26 @@ def run_simulation():
         backend_config = {"client_resources": {"num_cpus": 1, "num_gpus": 0.0}}
     
     # Run simulation
-    print(f"Starting local simulation with {NUM_CLIENTS} clients on {DEVICE}...")
+    print(f"Starting 100-epoch local simulation with {NUM_CLIENTS} clients on {DEVICE}...")
     run_simulation(
         server_app=server,
         client_app=client,
         num_supernodes=NUM_CLIENTS,
         backend_config=backend_config,
     )
-    print("Simulation completed!")
+    
+    # Print final loss summary for all clients
+    print("\n=== Final Client Loss Summary ===")
+    print("Client ID | Epochs | Initial Loss | Final Loss | Improvement")
+    print("-" * 65)
+    for client_id, losses in sorted(client_losses.items()):
+        if losses:
+            initial_loss = losses[0]
+            final_loss = losses[-1]
+            improvement = initial_loss - final_loss
+            print(f"Client {client_id:7d} | {len(losses):6d} | {initial_loss:12.4f} | {final_loss:10.4f} | {improvement:11.4f}")
+    
+    print("\nSimulation completed!")
 
 if __name__ == "__main__":
     print("Starting SASWISE Fed-101 simulation...")
