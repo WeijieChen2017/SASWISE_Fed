@@ -38,17 +38,28 @@ def run_simulation():
     NUM_CLIENTS = 10
     NUM_ROUNDS = 5
     LOCAL_EPOCHS = 1
+    
+    # GPU setup for local simulation
     DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(f"Training on {DEVICE}")
     
+    # If using GPU, optimize memory usage
+    if DEVICE.type == "cuda":
+        torch.cuda.empty_cache()
+        # Enable memory efficient methods if available
+        if hasattr(torch.backends, 'cudnn'):
+            torch.backends.cudnn.benchmark = True
+    
     # Define client_fn
     def client_fn(context):
-        # Load model
-        net = Net()
+        # Load model and ensure it's on the right device
+        net = Net().to(DEVICE)
+        
         # Load data
         partition_id = context.node_config["partition-id"]
         trainloader, valloader = load_data(partition_id, NUM_CLIENTS)
-        # Return client
+        
+        # Return client with device specification
         return FlowerClient(net, trainloader, valloader, LOCAL_EPOCHS).to_client()
     
     # Define weighted_average
@@ -79,13 +90,36 @@ def run_simulation():
     client = ClientApp(client_fn=client_fn)
     server = ServerApp(server_fn=server_fn)
     
-    # Backend configuration
-    backend_config = {"client_resources": {"num_cpus": 1, "num_gpus": 0.0}}
-    if torch.cuda.is_available():
-        backend_config = {"client_resources": {"num_cpus": 1, "num_gpus": 1.0}}
+    # Backend configuration optimized for local simulation on a single GPU
+    if DEVICE.type == "cuda":
+        # For local GPU simulation, we can efficiently share the GPU
+        # Each client gets a portion of the GPU memory
+        gpu_memory_per_client = 0.1  # 10% of GPU memory per client
+        
+        # Configure resources for local simulation on a single GPU
+        backend_config = {
+            "client_resources": {
+                "num_cpus": 0.5,  # Share CPU cores
+                "num_gpus": gpu_memory_per_client  # Each client gets a portion of the GPU
+            },
+            "server_resources": {
+                "num_cpus": 1.0,
+                "num_gpus": 0.1  # Server also needs some GPU resources
+            },
+            # Ray configuration for better GPU sharing
+            "ray_init_args": {
+                "include_dashboard": False,
+                "ignore_reinit_error": True,
+                "_memory": 1024 * 1024 * 1024,  # 1GB memory limit per client
+                "_redis_max_memory": 1024 * 1024 * 1024,  # 1GB for redis
+            }
+        }
+    else:
+        # CPU-only configuration
+        backend_config = {"client_resources": {"num_cpus": 1, "num_gpus": 0.0}}
     
     # Run simulation
-    print(f"Starting simulation with {NUM_CLIENTS} clients...")
+    print(f"Starting local simulation with {NUM_CLIENTS} clients on {DEVICE}...")
     run_simulation(
         server_app=server,
         client_app=client,
