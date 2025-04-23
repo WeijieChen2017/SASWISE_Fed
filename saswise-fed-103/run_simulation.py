@@ -1,3 +1,5 @@
+# remember to install ray and flwr
+
 from flwr.client import Client, ClientApp, NumPyClient
 from flwr.common import ndarrays_to_parameters, Context
 from flwr.server import ServerApp, ServerConfig
@@ -144,7 +146,7 @@ class FlowerClient(NumPyClient):
     def fit(self, parameters, config):
         start_time = time.time()
         current_round = config.get("server_round", 0)
-        print(f"[{datetime.now().strftime('%H:%M:%S')}] Client {self.client_id} starting training for round {current_round}")
+        # print(f"[{datetime.now().strftime('%H:%M:%S')}] Client {self.client_id} starting training for round {current_round}")
         
         set_weights(self.net, parameters)
         # Customize the training with parameters from config
@@ -155,17 +157,40 @@ class FlowerClient(NumPyClient):
         # Store metrics for this client
         if current_round not in client_metrics:
             client_metrics[current_round] = {"clients": []}
+        elif "clients" not in client_metrics[current_round]:
+            client_metrics[current_round]["clients"] = []
         
-        client_metrics[current_round]["clients"].append({
-            "id": self.client_id,
-            "training_loss": training_loss,
-            "validation_loss": val_loss,
-            "validation_accuracy": val_accuracy
-        })
+        # Check if this client is already in the metrics
+        client_found = False
+        for idx, client in enumerate(client_metrics[current_round]["clients"]):
+            if client.get("id") == self.client_id:
+                # Update existing client entry
+                client_metrics[current_round]["clients"][idx] = {
+                    "id": self.client_id,
+                    "training_loss": training_loss,
+                    "validation_loss": val_loss,
+                    "validation_accuracy": val_accuracy,
+                    "dataset_size": len(self.trainset)
+                }
+                client_found = True
+                break
+                
+        # Add client if not found
+        if not client_found:
+            client_metrics[current_round]["clients"].append({
+                "id": self.client_id,
+                "training_loss": training_loss,
+                "validation_loss": val_loss,
+                "validation_accuracy": val_accuracy,
+                "dataset_size": len(self.trainset)
+            })
         
         train_time = time.time() - start_time
         print(f"[{datetime.now().strftime('%H:%M:%S')}] Client {self.client_id} completed round {current_round} in {train_time:.2f}s")
         print(f"  Training Loss: {training_loss:.4f}, Val Loss: {val_loss:.4f}, Val Accuracy: {val_accuracy:.4f}")
+        
+        # Save metrics after each client completes training to ensure we don't lose data
+        save_round_metrics(current_round)
         
         return get_weights(self.net), len(self.trainset), {"training_loss": training_loss}
     
@@ -272,12 +297,18 @@ def save_round_metrics(round_num):
         "test_subset_metrics": round_data.get("test_subset_metrics", {})
     }
     
+    # Add special round information
+    if "initial_round" in round_data:
+        output_data["initial_round"] = round_data["initial_round"]
+    if "message" in round_data:
+        output_data["message"] = round_data["message"]
+    
     # Save to file
     filename = f"{log_dir}/round_{round_num:03d}.json"
     with open(filename, "w") as f:
         json.dump(output_data, f, indent=2)
     
-    print(f"[{datetime.now().strftime('%H:%M:%S')}] Saved metrics for round {round_num} to {filename}")
+    # print(f"[{datetime.now().strftime('%H:%M:%S')}] Saved metrics for round {round_num} to {filename}")
     log(INFO, f"Saved metrics for round {round_num} to {filename}")
 
 # Client function
@@ -322,7 +353,9 @@ def evaluate(server_round, parameters, config):
     # For initial round (0), create placeholder client data
     if server_round == 0 and "clients" not in client_metrics[server_round]:
         client_metrics[server_round]["clients"] = []
-        # No client metrics yet for round 0, but we can add test metrics
+        # Add explanation for empty clients in round 0
+        client_metrics[server_round]["initial_round"] = True
+        client_metrics[server_round]["message"] = "This is the initial evaluation round before any client training"
     
     client_metrics[server_round]["test_subset_metrics"] = test_subset_metrics
     client_metrics[server_round]["global_accuracy"] = accuracy
@@ -332,7 +365,7 @@ def evaluate(server_round, parameters, config):
     save_round_metrics(server_round)
     
     eval_time = time.time() - start_time
-    print(f"[{datetime.now().strftime('%H:%M:%S')}] Round {server_round} - Server Evaluation completed in {eval_time:.2f}s")
+    # print(f"[{datetime.now().strftime('%H:%M:%S')}] Round {server_round} - Server Evaluation completed in {eval_time:.2f}s")
 
     if server_round == num_rounds:
         print(f"[{datetime.now().strftime('%H:%M:%S')}] Training completed! Generating confusion matrix...")
