@@ -1,4 +1,5 @@
 # remember to install ray and flwr
+# pip install "numpy<2"
 
 from flwr.client import Client, ClientApp, NumPyClient
 from flwr.common import ndarrays_to_parameters, Context
@@ -218,10 +219,16 @@ class FlowerClient(NumPyClient):
             for batch_idx, (inputs, labels) in enumerate(train_loader):
                 # Print progress more frequently for first few batches to verify it's working
                 if batch_idx < 5 or batch_idx % 10 == 0:
-                    print(f"\r  Epoch {epoch+1}/{epochs} - Batch {batch_idx}/{len(train_loader)} - Client {self.client_id}", end="")
-                    # Force flush output to make sure progress is shown immediately
-                    import sys
-                    sys.stdout.flush()
+                    # Save training progress to JSON
+                    progress_data = {
+                        "client_id": self.client_id,
+                        "epoch": epoch + 1,
+                        "batch": batch_idx,
+                        "training_loss": loss.item()
+                    }
+                    with open(f"{log_dir}/training_progress_epoch{epoch+1}_client{self.client_id}.json", "a") as f:
+                        json.dump(progress_data, f)
+                        f.write("\n")
                 
                 try:
                     inputs, labels = inputs.to(device), labels.to(device)
