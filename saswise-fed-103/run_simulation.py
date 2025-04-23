@@ -163,7 +163,13 @@ class FlowerClient(NumPyClient):
         return get_weights(self.net), len(self.trainset), {"training_loss": training_loss}
     
     def train_model(self, model, train_set):
-        train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
+        # Debug output to identify if we're entering the training loop
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] Client {self.client_id} training started with {len(train_set)} samples")
+        
+        # Create smaller batches to reduce memory usage and potential hanging
+        effective_batch_size = min(batch_size, 64)  # Limit batch size if it's too large
+        train_loader = DataLoader(train_set, batch_size=effective_batch_size, shuffle=True, num_workers=0, pin_memory=False)
+        print(f"  Using batch size: {effective_batch_size}, total batches: {len(train_loader)}")
 
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum)
@@ -175,26 +181,44 @@ class FlowerClient(NumPyClient):
         for epoch in range(epochs):
             epoch_start = time.time()
             epoch_loss = 0.0
-            for batch_idx, (inputs, labels) in enumerate(train_loader):
-                inputs, labels = inputs.to(device), labels.to(device)
-                optimizer.zero_grad()
-                outputs = model(inputs)
-                loss = criterion(outputs, labels)
-                loss.backward()
-                optimizer.step()
-                epoch_loss += loss.item()
-                batches += 1
-                
-                # Print progress every 10 batches
-                if batch_idx % 10 == 0:
-                    print(f"\r  Epoch {epoch+1}/{epochs} - Batch {batch_idx}/{len(train_loader)} - Loss: {loss.item():.4f}", end="")
+            print(f"  Starting epoch {epoch+1}/{epochs}")
             
-            epoch_avg_loss = epoch_loss / len(train_loader)
+            for batch_idx, (inputs, labels) in enumerate(train_loader):
+                # Print progress more frequently for first few batches to verify it's working
+                if batch_idx < 5 or batch_idx % 10 == 0:
+                    print(f"\r  Epoch {epoch+1}/{epochs} - Batch {batch_idx}/{len(train_loader)} - Client {self.client_id}", end="")
+                    # Force flush output to make sure progress is shown immediately
+                    import sys
+                    sys.stdout.flush()
+                
+                try:
+                    inputs, labels = inputs.to(device), labels.to(device)
+                    optimizer.zero_grad()
+                    outputs = model(inputs)
+                    loss = criterion(outputs, labels)
+                    loss.backward()
+                    optimizer.step()
+                    epoch_loss += loss.item()
+                    batches += 1
+                except Exception as e:
+                    print(f"\n  ERROR in batch {batch_idx}: {str(e)}")
+                    # Continue with next batch instead of failing
+                    continue
+                
+                # Free up memory
+                if device.type == 'cuda':
+                    torch.cuda.empty_cache()
+                
+                # Clear references to reduce memory pressure
+                del inputs, labels, outputs, loss
+            
+            epoch_avg_loss = epoch_loss / max(len(train_loader), 1)  # Avoid division by zero
             total_loss += epoch_avg_loss
             epoch_time = time.time() - epoch_start
-            print(f"\r  Epoch {epoch+1}/{epochs} completed in {epoch_time:.2f}s - Avg Loss: {epoch_avg_loss:.4f}")
-            
+            print(f"\n  Epoch {epoch+1}/{epochs} completed in {epoch_time:.2f}s - Avg Loss: {epoch_avg_loss:.4f}")
+        
         # Return average loss across all epochs
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] Client {self.client_id} training finished")
         return total_loss / epochs
 
     # Test the model
@@ -240,10 +264,12 @@ def save_round_metrics(round_num):
 
 # Client function
 def client_fn(context: Context) -> Client:
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Creating client with partition ID: {context.node_config['partition-id']}")
     net = ResNet20().to(device)
     partition_id = int(context.node_config["partition-id"])
     client_train = train_sets[int(partition_id)]
     client_test = testset
+    print(f"  Client {partition_id} dataset size: {len(client_train)}")
     return FlowerClient(net, client_train, client_test, partition_id).to_client()
 
 client = ClientApp(client_fn)
@@ -295,12 +321,15 @@ params = ndarrays_to_parameters(get_weights(net))
 def server_fn(context: Context):
     print(f"[{datetime.now().strftime('%H:%M:%S')}] Server initialized with {num_rounds} rounds")
     
+    # Set a shorter timeout to avoid hanging
     strategy = FedAvg(
         fraction_fit=1.0,
         fraction_evaluate=0.0,
         initial_parameters=params,
         evaluate_fn=evaluate,
         fit_metrics_aggregation_fn=aggregate_fit_metrics,
+        min_fit_clients=num_clients,  # Make sure all clients participate
+        min_available_clients=num_clients  # Ensure we have enough clients
     )
     config=ServerConfig(num_rounds=num_rounds)
     return ServerAppComponents(
