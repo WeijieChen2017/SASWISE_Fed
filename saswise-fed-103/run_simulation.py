@@ -26,13 +26,19 @@ if torch.cuda.is_available():
     print(f"CUDA device count: {torch.cuda.device_count()}")
 print(f"=========================================")
 
-# Create logs directory if it doesn't exist
-os.makedirs("logs", exist_ok=True)
+# Create logs directory with timestamp
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+log_dir = f"logs/run_{timestamp}"
+os.makedirs(log_dir, exist_ok=True)
+print(f"Logs will be stored in: {log_dir}")
 
-print(f"[{datetime.now().strftime('%H:%M:%S')}] Loading configuration...")
-# Load configuration
+# Save a copy of the config to the log directory
 with open("config.json", "r") as f:
     config = json.load(f)
+
+# Save config to the log directory
+with open(f"{log_dir}/config.json", "w") as f:
+    json.dump(config, f, indent=2)
 
 # Training parameters
 num_clients = config["training"]["num_clients"]
@@ -267,7 +273,7 @@ def save_round_metrics(round_num):
     }
     
     # Save to file
-    filename = f"logs/round_{round_num:03d}.json"
+    filename = f"{log_dir}/round_{round_num:03d}.json"
     with open(filename, "w") as f:
         json.dump(output_data, f, indent=2)
     
@@ -404,4 +410,31 @@ run_simulation(
 
 simulation_time = time.time() - simulation_start
 print(f"\n[{datetime.now().strftime('%H:%M:%S')}] Simulation completed in {simulation_time:.2f} seconds")
+
+# Save summary information
+summary = {
+    "timestamp": timestamp,
+    "total_runtime_seconds": simulation_time,
+    "config": {
+        "num_clients": num_clients,
+        "num_rounds": num_rounds,
+        "epochs": epochs,
+        "batch_size": batch_size,
+        "learning_rate": learning_rate,
+        "momentum": momentum,
+        "data_fraction": data_fraction,
+        "device": str(device)
+    },
+    "final_metrics": client_metrics.get(num_rounds, {}).get("global", {})
+}
+
+# Add information about the last round if available
+if num_rounds in client_metrics and "global_accuracy" in client_metrics[num_rounds]:
+    summary["final_accuracy"] = client_metrics[num_rounds]["global_accuracy"]
+
+# Save summary to the log directory
+with open(f"{log_dir}/summary.json", "w") as f:
+    json.dump(summary, f, indent=2)
+
+print(f"Summary saved to {log_dir}/summary.json")
 
