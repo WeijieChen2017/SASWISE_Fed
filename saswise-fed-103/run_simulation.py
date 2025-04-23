@@ -239,6 +239,10 @@ def save_round_metrics(round_num):
     if "global" not in round_data:
         round_data["global"] = {}
     
+    # Ensure clients data is preserved in the output JSON
+    if "clients" not in round_data:
+        round_data["clients"] = []
+    
     # Calculate global metrics (averages across all clients)
     if "clients" in round_data and round_data["clients"]:
         train_losses = [client["training_loss"] for client in round_data["clients"]]
@@ -255,17 +259,24 @@ def save_round_metrics(round_num):
     if "test_subset_metrics" in round_data:
         round_data["global"].update(round_data["test_subset_metrics"])
     
+    # Create a clean copy of the metrics to save (this ensures the entire structure is saved)
+    output_data = {
+        "global": round_data.get("global", {}),
+        "clients": round_data.get("clients", []),
+        "test_subset_metrics": round_data.get("test_subset_metrics", {})
+    }
+    
     # Save to file
     filename = f"logs/round_{round_num:03d}.json"
     with open(filename, "w") as f:
-        json.dump(round_data, f, indent=2)
+        json.dump(output_data, f, indent=2)
     
     print(f"[{datetime.now().strftime('%H:%M:%S')}] Saved metrics for round {round_num} to {filename}")
     log(INFO, f"Saved metrics for round {round_num} to {filename}")
 
 # Client function
 def client_fn(context: Context) -> Client:
-    print(f"[{datetime.now().strftime('%H:%M:%S')}] Creating client with partition ID: {context.node_config['partition-id']}")
+    # print(f"[{datetime.now().strftime('%H:%M:%S')}] Creating client with partition ID: {context.node_config['partition-id']}")
     net = ResNet20().to(device)
     partition_id = int(context.node_config["partition-id"])
     client_train = train_sets[int(partition_id)]
@@ -276,13 +287,13 @@ def client_fn(context: Context) -> Client:
 client = ClientApp(client_fn)
 
 def evaluate(server_round, parameters, config):
-    print(f"\n[{datetime.now().strftime('%H:%M:%S')}] Round {server_round} - Server Evaluation Starting")
+    # print(f"\n[{datetime.now().strftime('%H:%M:%S')}] Round {server_round} - Server Evaluation Starting")
     start_time = time.time()
     
     net = ResNet20().to(device)
     set_weights(net, parameters)
 
-    _, accuracy = evaluate_model(net, testset)
+    test_loss, accuracy = evaluate_model(net, testset)
     
     # Store test subset metrics
     test_subset_metrics = {}
@@ -292,17 +303,24 @@ def evaluate(server_round, parameters, config):
         subset_loss, subset_accuracy = evaluate_model(net, subset)
         test_subset_metrics[f"{name}_accuracy"] = subset_accuracy
         test_subset_metrics[f"{name}_loss"] = subset_loss
-        print(f"  Test accuracy on {name}: {subset_accuracy:.4f}")
+        # print(f"  Test accuracy on {name}: {subset_accuracy:.4f}")
         log(INFO, f"test accuracy on {name}: %.4f", subset_accuracy)
     
-    print(f"  Test accuracy on all classes: {accuracy:.4f}")
+    # print(f"  Test accuracy on all classes: {accuracy:.4f}")
     log(INFO, "test accuracy on all classes: %.4f", accuracy)
 
     # Store test subset metrics in the round data
     if server_round not in client_metrics:
         client_metrics[server_round] = {}
+    
+    # For initial round (0), create placeholder client data
+    if server_round == 0 and "clients" not in client_metrics[server_round]:
+        client_metrics[server_round]["clients"] = []
+        # No client metrics yet for round 0, but we can add test metrics
+    
     client_metrics[server_round]["test_subset_metrics"] = test_subset_metrics
     client_metrics[server_round]["global_accuracy"] = accuracy
+    client_metrics[server_round]["global_loss"] = test_loss
     
     # Save metrics for this round
     save_round_metrics(server_round)
@@ -350,7 +368,7 @@ def aggregate_fit_metrics(fit_metrics):
     
     if training_losses:
         avg_loss = float(np.mean(training_losses))
-        print(f"[{datetime.now().strftime('%H:%M:%S')}] Aggregated training loss: {avg_loss:.4f}")
+        # print(f"[{datetime.now().strftime('%H:%M:%S')}] Aggregated training loss: {avg_loss:.4f}")
         return {
             "training_loss": avg_loss
         }
