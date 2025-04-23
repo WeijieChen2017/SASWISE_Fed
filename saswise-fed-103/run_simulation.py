@@ -11,6 +11,7 @@ from collections import Counter
 import os
 import time
 from datetime import datetime
+from logging import INFO, ERROR
 
 from utils2 import *
 
@@ -356,6 +357,15 @@ def aggregate_fit_metrics(fit_metrics):
     return {}
 
 server = ServerApp(server_fn=server_fn)
+
+# Update backend_setup to explicitly specify a different backend
+backend_setup = {
+    "backend_name": "simulation",  # Use the built-in simulation backend instead of Ray
+    "init_args": {
+        "logging_level": ERROR, 
+        "log_to_driver": False
+    }
+}
 
 # Initiate the simulation passing the server and client apps
 print(f"\n[{datetime.now().strftime('%H:%M:%S')}] Starting federated learning simulation...")
