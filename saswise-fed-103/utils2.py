@@ -134,7 +134,7 @@ def train_model(model, train_set):
             running_loss += loss.item()
 
 
-def evaluate_model(model, test_set):
+def evaluate_model(model, test_set, val_steps=None):
     device = next(model.parameters()).device  # Get device from model
     model.eval()
     correct = 0
@@ -145,7 +145,11 @@ def evaluate_model(model, test_set):
     criterion = nn.CrossEntropyLoss()
 
     with torch.no_grad():
-        for inputs, labels in test_loader:
+        for batch_idx, (inputs, labels) in enumerate(test_loader):
+            # If val_steps is provided, only evaluate on that many batches
+            if val_steps is not None and batch_idx >= val_steps:
+                break
+                
             inputs, labels = inputs.to(device), labels.to(device)
             outputs = model(inputs)
             _, predicted = torch.max(outputs.data, 1)
@@ -155,8 +159,14 @@ def evaluate_model(model, test_set):
             loss = criterion(outputs, labels)
             total_loss += loss.item()
 
+    # Adjust loss calculation if we're using val_steps
+    if val_steps is not None and batch_idx < len(test_loader):
+        num_batches = min(val_steps, batch_idx + 1)
+    else:
+        num_batches = len(test_loader)
+        
     accuracy = correct / total
-    average_loss = total_loss / len(test_loader)
+    average_loss = total_loss / num_batches
     # print(f"Test Accuracy: {accuracy:.4f}, Average Loss: {average_loss:.4f}")
     return average_loss, accuracy
 
