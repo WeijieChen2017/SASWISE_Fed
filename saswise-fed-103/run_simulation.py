@@ -145,120 +145,190 @@ class FlowerClient(NumPyClient):
 
     # Train the model
     def fit(self, parameters, config):
-        start_time = time.time()
-        current_round = config.get("server_round", 0)
-        # print(f"[{datetime.now().strftime('%H:%M:%S')}] Client {self.client_id} starting training for round {current_round}")
-        
-        set_weights(self.net, parameters)
-        # Customize the training with parameters from config
-        training_loss = self.train_model(self.net, self.trainset)
-        # Evaluate after training to get validation metrics
-        val_loss, val_accuracy = evaluate_model(self.net, self.testset)
-        
-        # Store metrics for this client
-        if current_round not in client_metrics:
-            client_metrics[current_round] = {"clients": []}
-        elif "clients" not in client_metrics[current_round]:
-            client_metrics[current_round]["clients"] = []
-        
-        # Check if this client is already in the metrics
-        client_found = False
-        for idx, client in enumerate(client_metrics[current_round]["clients"]):
-            if client.get("id") == self.client_id:
-                # Update existing client entry
-                client_metrics[current_round]["clients"][idx] = {
+        try:
+            start_time = time.time()
+            current_round = config.get("server_round", 0)
+            
+            set_weights(self.net, parameters)
+            # Customize the training with parameters from config
+            training_loss = self.train_model(self.net, self.trainset)
+            # Evaluate after training to get validation metrics
+            val_loss, val_accuracy = evaluate_model(self.net, self.testset)
+            
+            # Store metrics for this client
+            if current_round not in client_metrics:
+                client_metrics[current_round] = {"clients": []}
+            elif "clients" not in client_metrics[current_round]:
+                client_metrics[current_round]["clients"] = []
+            
+            # Check if this client is already in the metrics
+            client_found = False
+            for idx, client in enumerate(client_metrics[current_round]["clients"]):
+                if client.get("id") == self.client_id:
+                    # Update existing client entry
+                    client_metrics[current_round]["clients"][idx] = {
+                        "id": self.client_id,
+                        "training_loss": training_loss,
+                        "validation_loss": val_loss,
+                        "validation_accuracy": val_accuracy,
+                        "dataset_size": len(self.trainset)
+                    }
+                    client_found = True
+                    break
+                
+            # Add client if not found
+            if not client_found:
+                client_metrics[current_round]["clients"].append({
                     "id": self.client_id,
                     "training_loss": training_loss,
                     "validation_loss": val_loss,
                     "validation_accuracy": val_accuracy,
                     "dataset_size": len(self.trainset)
-                }
-                client_found = True
-                break
-                
-        # Add client if not found
-        if not client_found:
-            client_metrics[current_round]["clients"].append({
-                "id": self.client_id,
-                "training_loss": training_loss,
-                "validation_loss": val_loss,
-                "validation_accuracy": val_accuracy,
-                "dataset_size": len(self.trainset)
-            })
+                })
+            
+            train_time = time.time() - start_time
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] Client {self.client_id} completed round {current_round} in {train_time:.2f}s")
+            print(f"  Training Loss: {training_loss:.4f}, Val Loss: {val_loss:.4f}, Val Accuracy: {val_accuracy:.4f}")
+            
+            # Save metrics after each client completes training to ensure we don't lose data
+            save_round_metrics(current_round)
+            
+            return get_weights(self.net), len(self.trainset), {"training_loss": training_loss}
         
-        train_time = time.time() - start_time
-        print(f"[{datetime.now().strftime('%H:%M:%S')}] Client {self.client_id} completed round {current_round} in {train_time:.2f}s")
-        print(f"  Training Loss: {training_loss:.4f}, Val Loss: {val_loss:.4f}, Val Accuracy: {val_accuracy:.4f}")
-        
-        # Save metrics after each client completes training to ensure we don't lose data
-        save_round_metrics(current_round)
-        
-        return get_weights(self.net), len(self.trainset), {"training_loss": training_loss}
+        except Exception as e:
+            # Log client training failure
+            error_msg = f"ERROR in client {self.client_id} fit method: {str(e)}"
+            print(error_msg)
+            
+            # Write error to log file
+            with open(f"{log_dir}/error_log.txt", "a") as f:
+                f.write(f"{error_msg}\n")
+            
+            # Return original parameters to prevent model corruption
+            # This allows the simulation to continue even if this client fails
+            return parameters, 0, {"error": str(e)}
     
     def train_model(self, model, train_set):
         # Debug output to identify if we're entering the training loop
         print(f"[{datetime.now().strftime('%H:%M:%S')}] Client {self.client_id} training started with {len(train_set)} samples")
         
-        # Create smaller batches to reduce memory usage and potential hanging
-        effective_batch_size = min(batch_size, 64)  # Limit batch size if it's too large
-        train_loader = DataLoader(train_set, batch_size=effective_batch_size, shuffle=True, num_workers=0, pin_memory=False)
-        print(f"  Using batch size: {effective_batch_size}, total batches: {len(train_loader)}")
+        try:
+            # Create smaller batches to reduce memory usage and potential hanging
+            effective_batch_size = min(batch_size, 32)  # Reduce batch size even further
+            train_loader = DataLoader(train_set, batch_size=effective_batch_size, shuffle=True, num_workers=0, pin_memory=False)
+            print(f"  Using batch size: {effective_batch_size}, total batches: {len(train_loader)}")
 
-        criterion = nn.CrossEntropyLoss()
-        optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum)
+            criterion = nn.CrossEntropyLoss()
+            optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum)
 
-        model.train()
-        total_loss = 0.0
-        batches = 0
-        
-        for epoch in range(epochs):
-            epoch_start = time.time()
-            epoch_loss = 0.0
-            print(f"  Starting epoch {epoch+1}/{epochs}")
+            model.train()
+            total_loss = 0.0
+            batches = 0
             
-            for batch_idx, (inputs, labels) in enumerate(train_loader):
-                # Print progress more frequently for first few batches to verify it's working
-                if batch_idx < 5 or batch_idx % 10 == 0:
-                    # Save training progress to JSON
-                    progress_data = {
-                        "client_id": self.client_id,
-                        "epoch": epoch + 1,
-                        "batch": batch_idx,
-                        "training_loss": loss.item()
-                    }
-                    with open(f"{log_dir}/training_progress_epoch{epoch+1}_client{self.client_id}.json", "a") as f:
-                        json.dump(progress_data, f)
-                        f.write("\n")
+            for epoch in range(epochs):
+                epoch_start = time.time()
+                epoch_loss = 0.0
+                print(f"  Starting epoch {epoch+1}/{epochs}")
                 
+                for batch_idx, (inputs, labels) in enumerate(train_loader):
+                    # Print progress more frequently for first few batches to verify it's working
+                    if batch_idx < 5 or batch_idx % 10 == 0:
+                        # Save training progress to JSON
+                        progress_data = {
+                            "client_id": self.client_id,
+                            "epoch": epoch + 1,
+                            "batch": batch_idx,
+                            "training_loss": 0.0  # Will be updated if loss computation succeeds
+                        }
+                        
+                    try:
+                        inputs, labels = inputs.to(device), labels.to(device)
+                        optimizer.zero_grad()
+                        outputs = model(inputs)
+                        loss = criterion(outputs, labels)
+                        loss.backward()
+                        optimizer.step()
+                        epoch_loss += loss.item()
+                        batches += 1
+                        
+                        # Update progress data with actual loss if available
+                        if batch_idx < 5 or batch_idx % 10 == 0:
+                            progress_data["training_loss"] = loss.item()
+                            
+                    except Exception as e:
+                        error_msg = f"\n  ERROR in batch {batch_idx}: {str(e)}"
+                        print(error_msg)
+                        
+                        # Log error to file
+                        with open(f"{log_dir}/error_log.txt", "a") as f:
+                            f.write(f"Client {self.client_id}, Epoch {epoch+1}, Batch {batch_idx}: {str(e)}\n")
+                        
+                        # Continue with next batch instead of failing
+                        continue
+                    
+                    # Free up memory
+                    if device.type == 'cuda':
+                        torch.cuda.empty_cache()
+                    
+                    # Clear references to reduce memory pressure
+                    del inputs, labels, outputs, loss
+                    
+                    # Save training progress to JSON if appropriate
+                    if batch_idx < 5 or batch_idx % 10 == 0:
+                        try:
+                            with open(f"{log_dir}/training_progress_epoch{epoch+1}_client{self.client_id}.json", "a") as f:
+                                json.dump(progress_data, f)
+                                f.write("\n")
+                        except Exception as e:
+                            print(f"  Error saving progress data: {str(e)}")
+                
+                # Skip division if no batches were processed
+                if batches > 0:
+                    epoch_avg_loss = epoch_loss / max(len(train_loader), 1)  # Avoid division by zero
+                    total_loss += epoch_avg_loss
+                else:
+                    epoch_avg_loss = 0.0
+                    print("  WARNING: No batches were successfully processed in this epoch")
+                    
+                epoch_time = time.time() - epoch_start
+                
+                # Print epoch summary
+                epoch_summary = {
+                    "client_id": self.client_id,
+                    "epoch": epoch + 1,
+                    "total_epochs": epochs,
+                    "epoch_time": epoch_time,
+                    "avg_loss": epoch_avg_loss
+                }
+                
+                # Save to epoch summary file
                 try:
-                    inputs, labels = inputs.to(device), labels.to(device)
-                    optimizer.zero_grad()
-                    outputs = model(inputs)
-                    loss = criterion(outputs, labels)
-                    loss.backward()
-                    optimizer.step()
-                    epoch_loss += loss.item()
-                    batches += 1
+                    with open(f"{log_dir}/epoch_summary_client{self.client_id}.json", "a") as f:
+                        json.dump(epoch_summary, f)
+                        f.write("\n")
                 except Exception as e:
-                    print(f"\n  ERROR in batch {batch_idx}: {str(e)}")
-                    # Continue with next batch instead of failing
-                    continue
-                
-                # Free up memory
-                if device.type == 'cuda':
-                    torch.cuda.empty_cache()
-                
-                # Clear references to reduce memory pressure
-                del inputs, labels, outputs, loss
+                    print(f"  Error saving epoch summary: {str(e)}")
+                    
+                print(f"\n  Epoch {epoch+1}/{epochs} completed in {epoch_time:.2f}s - Avg Loss: {epoch_avg_loss:.4f}")
             
-            epoch_avg_loss = epoch_loss / max(len(train_loader), 1)  # Avoid division by zero
-            total_loss += epoch_avg_loss
-            epoch_time = time.time() - epoch_start
-            print(f"\n  Epoch {epoch+1}/{epochs} completed in {epoch_time:.2f}s - Avg Loss: {epoch_avg_loss:.4f}")
+            # Return average loss across all epochs
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] Client {self.client_id} training finished")
+            
+            # Return 0 if no batches were processed to avoid division by zero
+            if batches == 0:
+                return 0.0
+            
+            return total_loss / max(epochs, 1)  # Avoid division by zero
         
-        # Return average loss across all epochs
-        print(f"[{datetime.now().strftime('%H:%M:%S')}] Client {self.client_id} training finished")
-        return total_loss / epochs
+        except Exception as e:
+            # Log critical error
+            error_msg = f"CRITICAL ERROR in client {self.client_id} training: {str(e)}"
+            print(error_msg)
+            with open(f"{log_dir}/error_log.txt", "a") as f:
+                f.write(f"{error_msg}\n")
+            
+            # Return a default value to allow the simulation to continue
+            return 0.0
 
     # Test the model
     def evaluate(self, parameters: NDArrays, config: Dict[str, Scalar]):
@@ -386,15 +456,17 @@ params = ndarrays_to_parameters(get_weights(net))
 def server_fn(context: Context):
     print(f"[{datetime.now().strftime('%H:%M:%S')}] Server initialized with {num_rounds} rounds")
     
-    # Set a shorter timeout to avoid hanging
+    # Modified FedAvg strategy with more tolerance for client failures
     strategy = FedAvg(
         fraction_fit=1.0,
         fraction_evaluate=0.0,
         initial_parameters=params,
         evaluate_fn=evaluate,
         fit_metrics_aggregation_fn=aggregate_fit_metrics,
-        min_fit_clients=num_clients,  # Make sure all clients participate
-        min_available_clients=num_clients  # Ensure we have enough clients
+        min_fit_clients=1,  # Allow training to proceed even if only one client succeeds
+        min_available_clients=num_clients,  # Still require all clients to be available
+        min_completion_rate_fit=0.1,  # Allow a lower completion rate
+        accept_failures=True  # Accept and continue despite client failures
     )
     config=ServerConfig(num_rounds=num_rounds)
     return ServerAppComponents(
