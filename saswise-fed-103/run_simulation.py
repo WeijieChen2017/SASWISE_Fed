@@ -149,27 +149,9 @@ class FlowerClient(NumPyClient):
             start_time = time.time()
             current_round = config.get("server_round", 0)
             
-            # Get server-provided config parameters or use defaults
-            local_epochs = config.get("local_epochs", epochs)
-            local_lr = config.get("learning_rate", learning_rate)
-            local_momentum = config.get("momentum", momentum)
-            local_batch_size = config.get("batch_size", batch_size)
-            
-            print(f"[{datetime.now().strftime('%H:%M:%S')}] Client {self.client_id} starting training for round {current_round}")
-            print(f"  Using config: LR={local_lr}, momentum={local_momentum}, epochs={local_epochs}, batch_size={local_batch_size}")
-            
             set_weights(self.net, parameters)
-            
-            # Pass local configuration to train_model
-            training_loss = self.train_model(
-                self.net, 
-                self.trainset, 
-                epochs=local_epochs,
-                learning_rate=local_lr, 
-                momentum=local_momentum,
-                batch_size=local_batch_size
-            )
-            
+            # Customize the training with parameters from config
+            training_loss = self.train_model(self.net, self.trainset)
             # Evaluate after training to get validation metrics
             val_loss, val_accuracy = evaluate_model(self.net, self.testset)
             
@@ -189,13 +171,7 @@ class FlowerClient(NumPyClient):
                         "training_loss": training_loss,
                         "validation_loss": val_loss,
                         "validation_accuracy": val_accuracy,
-                        "dataset_size": len(self.trainset),
-                        "config": {
-                            "learning_rate": local_lr,
-                            "momentum": local_momentum,
-                            "epochs": local_epochs,
-                            "batch_size": local_batch_size
-                        }
+                        "dataset_size": len(self.trainset)
                     }
                     client_found = True
                     break
@@ -207,13 +183,7 @@ class FlowerClient(NumPyClient):
                     "training_loss": training_loss,
                     "validation_loss": val_loss,
                     "validation_accuracy": val_accuracy,
-                    "dataset_size": len(self.trainset),
-                    "config": {
-                        "learning_rate": local_lr,
-                        "momentum": local_momentum,
-                        "epochs": local_epochs,
-                        "batch_size": local_batch_size
-                    }
+                    "dataset_size": len(self.trainset)
                 })
             
             train_time = time.time() - start_time
@@ -238,7 +208,7 @@ class FlowerClient(NumPyClient):
             # This allows the simulation to continue even if this client fails
             return parameters, 0, {"error": str(e)}
     
-    def train_model(self, model, train_set, epochs=10, learning_rate=0.01, momentum=0.9, batch_size=128):
+    def train_model(self, model, train_set):
         # Debug output to identify if we're entering the training loop
         print(f"[{datetime.now().strftime('%H:%M:%S')}] Client {self.client_id} training started with {len(train_set)} samples")
         
@@ -362,64 +332,9 @@ class FlowerClient(NumPyClient):
 
     # Test the model
     def evaluate(self, parameters: NDArrays, config: Dict[str, Scalar]):
-        try:
-            set_weights(self.net, parameters)
-            
-            # Get evaluation configuration
-            val_steps = config.get("val_steps", None)  # Number of batches to evaluate on
-            current_round = config.get("server_round", 0)
-            
-            # Log evaluation start
-            print(f"[{datetime.now().strftime('%H:%M:%S')}] Client {self.client_id} evaluating in round {current_round}")
-            
-            # Perform evaluation with optional steps limit
-            loss, accuracy = evaluate_model(self.net, self.testset, val_steps=val_steps)
-            
-            # Store evaluation metrics
-            if current_round not in client_metrics:
-                client_metrics[current_round] = {"clients": []}
-            
-            # Update or add client evaluation metrics
-            client_data = {
-                "id": self.client_id,
-                "evaluation_loss": loss,
-                "evaluation_accuracy": accuracy
-            }
-            
-            # Check if this client already has metrics
-            client_updated = False
-            if "clients" in client_metrics[current_round]:
-                for idx, client in enumerate(client_metrics[current_round]["clients"]):
-                    if client.get("id") == self.client_id:
-                        # Update existing client entry with evaluation metrics
-                        client_metrics[current_round]["clients"][idx].update(client_data)
-                        client_updated = True
-                        break
-            
-            # Add new client entry if not found
-            if not client_updated:
-                if "clients" not in client_metrics[current_round]:
-                    client_metrics[current_round]["clients"] = []
-                client_metrics[current_round]["clients"].append(client_data)
-            
-            # Save updated metrics
-            save_round_metrics(current_round)
-            
-            print(f"  Client {self.client_id} evaluation: Loss={loss:.4f}, Accuracy={accuracy:.4f}")
-            
-            return loss, len(self.testset), {"loss": loss, "accuracy": accuracy}
-        
-        except Exception as e:
-            # Log evaluation failure
-            error_msg = f"ERROR in client {self.client_id} evaluate method: {str(e)}"
-            print(error_msg)
-            
-            # Write error to log file
-            with open(f"{log_dir}/error_log.txt", "a") as f:
-                f.write(f"{error_msg}\n")
-            
-            # Return default values to allow simulation to continue
-            return 0.0, 0, {"error": str(e)}
+        set_weights(self.net, parameters)
+        loss, accuracy = evaluate_model(self.net, self.testset)
+        return loss, len(self.testset), {"accuracy": accuracy}
     
 def save_round_metrics(round_num):
     """Save metrics for the current round to a JSON file"""
@@ -538,94 +453,18 @@ print(f"[{datetime.now().strftime('%H:%M:%S')}] Initializing global model...")
 net = ResNet20().to(device)
 params = ndarrays_to_parameters(get_weights(net))
 
-# Define configuration functions to provide to clients during training
-def fit_config(server_round: int) -> Dict[str, Scalar]:
-    """Return training configuration dict for each round.
-    
-    This allows for dynamic round-specific configuration.
-    """
-    # Optionally decrease learning rate as training progresses
-    lr_decay = 1.0
-    if server_round > 50:
-        lr_decay = 0.5
-    elif server_round > 30:
-        lr_decay = 0.8
-    
-    config = {
-        "server_round": server_round,  # Inform client of the current round
-        "learning_rate": learning_rate * lr_decay,  # Adjust learning rate based on round
-        "momentum": momentum,
-        "batch_size": batch_size,
-        "epochs": epochs,
-        "local_epochs": epochs,  # Alias for epochs
-    }
-    return config
-
-# Define configuration for evaluation
-def evaluate_config(server_round: int) -> Dict[str, Scalar]:
-    """Return evaluation configuration dict for each round."""
-    return {
-        "server_round": server_round,
-        "val_steps": 10,  # Number of batches to evaluate on
-    }
-
-# Aggregation function for evaluation metrics
-def aggregate_evaluate_metrics(eval_metrics):
-    """Aggregate evaluation metrics from multiple clients."""
-    if not eval_metrics:
-        return {}
-    
-    # Extract accuracies and losses
-    accuracies = [
-        metrics["accuracy"] for _, metrics in eval_metrics if "accuracy" in metrics
-    ]
-    losses = [
-        metrics["loss"] for _, metrics in eval_metrics if "loss" in metrics
-    ]
-    
-    metrics = {}
-    if accuracies:
-        metrics["accuracy"] = float(np.mean(accuracies))
-    if losses:
-        metrics["loss"] = float(np.mean(losses))
-    
-    print(f"[{datetime.now().strftime('%H:%M:%S')}] Aggregated evaluation metrics: {metrics}")
-    return metrics
-
 def server_fn(context: Context):
     print(f"[{datetime.now().strftime('%H:%M:%S')}] Server initialized with {num_rounds} rounds")
     
-    # Comprehensive FedAvg strategy with all configuration options
+    # Set a shorter timeout to avoid hanging
     strategy = FedAvg(
-        # Sampling configuration
-        fraction_fit=1.0,  # Use all available clients for training
-        fraction_evaluate=0.5,  # Use half of available clients for evaluation
-        
-        # Minimum client thresholds
-        min_fit_clients=1,  # Allow training to proceed even if only one client succeeds
-        min_evaluate_clients=1,  # Allow evaluation with at least one client
-        min_available_clients=num_clients,  # Require all clients to be available
-        
-        # Handling failures
-        accept_failures=True,  # Continue despite client failures
-        min_completion_rate_fit=0.1,  # Allow a lower completion rate
-        
-        # Initial model
+        fraction_fit=1.0,
+        fraction_evaluate=0.0,
         initial_parameters=params,
-        
-        # Evaluation function
         evaluate_fn=evaluate,
-        
-        # Configuration functions
-        on_fit_config_fn=fit_config,  # Pass configuration to clients during training
-        on_evaluate_config_fn=evaluate_config,  # Pass configuration during evaluation
-        
-        # Metrics aggregation
         fit_metrics_aggregation_fn=aggregate_fit_metrics,
-        evaluate_metrics_aggregation_fn=aggregate_evaluate_metrics,
-        
-        # Optimization
-        inplace=True  # Enable in-place aggregation for better memory efficiency
+        min_fit_clients=num_clients,  # Make sure all clients participate
+        min_available_clients=num_clients  # Ensure we have enough clients
     )
     config=ServerConfig(num_rounds=num_rounds)
     return ServerAppComponents(
