@@ -26,6 +26,7 @@ backend_setup = {"init_args": {"logging_level": ERROR, "log_to_driver": False}}
 
 import torchvision.transforms as transforms
 import torch
+import ray
 
 # Set device
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -355,9 +356,17 @@ def compute_confusion_matrix(model, testset, device=None):
 for i, dataset in enumerate(train_sets_CIFAR10):
     print(f"Client {i} dataset size: {len(dataset)}")
 
+# Add this before run_simulation
+if not ray.is_initialized():
+    ray.init(num_gpus=1, ignore_reinit_error=True)
+
+# Then modify your run_simulation call
 run_simulation(
     server_app=server_CIFAR10,
     client_app=client_app_CIFAR10,
     num_supernodes=5,
-    backend_config=backend_setup,
+    backend_config={
+        **backend_setup,
+        "ray_init_args": {"num_gpus": 1, "resources": {"GPU": 1}}
+    },
 )
