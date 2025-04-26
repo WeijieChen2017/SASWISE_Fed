@@ -1,0 +1,217 @@
+from flwr.client import Client, ClientApp, NumPyClient
+from flwr.common import ndarrays_to_parameters, Context
+from flwr.server import ServerApp, ServerConfig
+from flwr.server import ServerAppComponents
+from flwr.server.strategy import FedAvg
+from flwr.simulation import run_simulation
+
+from utils2 import *
+
+import torchvision.transforms as transforms
+
+# CIFAR-10 channel statistics (computed over the 50K training images)
+mean = [0.4914, 0.4822, 0.4465]
+std  = [0.2023, 0.1994, 0.2010]
+
+train_transform_CIFAR10 = transforms.Compose([
+    transforms.RandomCrop(32, padding=4),    # pad then random‐crop back to 32×32
+    transforms.RandomHorizontalFlip(),       # 50% chance flip
+    transforms.ToTensor(),                   # to [0,1] tensor
+    transforms.Normalize(mean, std),         # zero‐mean, unit‐variance
+])
+
+test_transform_CIFAR10 = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize(mean, std),
+])
+
+train_set_CIFAR10 = datasets.CIFAR10(
+    "./CIFAR10_data/", download=True, train=True, transform=train_transform_CIFAR10
+)
+
+total_length = len(train_set_CIFAR10)
+split_size = total_length // 5
+torch.manual_seed(42)
+part1, part2, part3, part4, part5 = random_split(train_set_CIFAR10, [split_size] * 5)
+
+def exclude_classes(dataset, excluded_classes):
+    """
+    Create a subset of CIFAR-10 dataset excluding specified classes.
+    
+    Args:
+        dataset: The CIFAR-10 dataset
+        excluded_classes: List of class indices to exclude
+        
+    Returns:
+        Subset of the dataset without the excluded classes
+    """
+    including_indices = [
+        idx for idx in range(len(dataset)) if dataset[idx][1] not in excluded_classes
+    ]
+    return torch.utils.data.Subset(dataset, including_indices)
+
+part1 = exclude_classes(part1, excluded_classes=[1, 3, 7])
+part2 = exclude_classes(part2, excluded_classes=[2, 5, 8])
+part3 = exclude_classes(part3, excluded_classes=[4, 6, 9])
+part4 = exclude_classes(part4, excluded_classes=[3, 5, 10])
+part5 = exclude_classes(part5, excluded_classes=[1, 4, 10])
+
+train_sets_CIFAR10 = [part1, part2, part3, part4, part5]
+
+testset_CIFAR10 = datasets.CIFAR10(
+    "./CIFAR10_data/", download=True, train=False, transform=test_transform_CIFAR10
+)
+testset_137 = include_digits(testset_CIFAR10, [1, 3, 7])
+testset_258 = include_digits(testset_CIFAR10, [2, 5, 8])
+testset_469 = include_digits(testset_CIFAR10, [4, 6, 9])
+testset_3510 = include_digits(testset_CIFAR10, [3, 5, 10])
+testset_1410 = include_digits(testset_CIFAR10, [1, 4, 10])
+
+# Sets the parameters of the model
+def set_weights(net, parameters):
+    params_dict = zip(net.state_dict().keys(), parameters)
+    state_dict = OrderedDict(
+        {k: torch.tensor(v) for k, v in params_dict}
+    )
+    net.load_state_dict(state_dict, strict=True)
+
+# Retrieves the parameters from the model
+def get_weights(net):
+    ndarrays = [
+        val.cpu().numpy() for _, val in net.state_dict().items()
+    ]
+    return ndarrays
+
+class FlowerClient(NumPyClient):
+    def __init__(self, net, trainset, testset):
+        self.net = net
+        self.trainset = trainset
+        self.testset = testset
+
+    # Train the model
+    def fit(self, parameters, config):
+        set_weights(self.net, parameters)
+        train_model(self.net, self.trainset)
+        return get_weights(self.net), len(self.trainset), {}
+
+    # Test the model
+    def evaluate(self, parameters: NDArrays, config: Dict[str, Scalar]):
+        set_weights(self.net, parameters)
+        loss, accuracy = evaluate_model(self.net, self.testset)
+        return loss, len(self.testset), {"accuracy": accuracy}
+    
+import torch
+import torch.nn as nn
+
+class BasicBlock(nn.Module):
+    expansion = 1
+
+    def __init__(self, in_planes, planes, stride=1):
+        super(BasicBlock, self).__init__()
+        self.conv1 = nn.Conv2d(in_planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(planes)
+        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=1, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(planes)
+
+        self.shortcut = nn.Sequential()
+        if stride != 1 or in_planes != planes:
+            self.shortcut = nn.Sequential(
+                nn.Conv2d(in_planes, planes, kernel_size=1, stride=stride, bias=False),
+                nn.BatchNorm2d(planes)
+            )
+
+    def forward(self, x):
+        out = torch.relu(self.bn1(self.conv1(x)))
+        out = self.bn2(self.conv2(out))
+        out += self.shortcut(x)
+        out = torch.relu(out)
+        return out
+
+
+class ResNet20(nn.Module):
+    def __init__(self, num_classes=10):
+        super(ResNet20, self).__init__()
+        self.in_planes = 16
+        
+        self.conv1 = nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(16)
+        
+        # ResNet-20 has 3 stages, each with 3 residual blocks (3*6+2=20 layers)
+        self.layer1 = self._make_layer(16, 3, stride=1)
+        self.layer2 = self._make_layer(32, 3, stride=2)
+        self.layer3 = self._make_layer(64, 3, stride=2)
+        
+        self.avgpool = nn.AvgPool2d(8)
+        self.fc = nn.Linear(64, num_classes)
+
+    def _make_layer(self, planes, num_blocks, stride):
+        strides = [stride] + [1] * (num_blocks - 1)
+        layers = []
+        for stride in strides:
+            layers.append(BasicBlock(self.in_planes, planes, stride))
+            self.in_planes = planes
+        return nn.Sequential(*layers)
+
+    def forward(self, x):
+        out = torch.relu(self.bn1(self.conv1(x)))
+        out = self.layer1(out)
+        out = self.layer2(out)
+        out = self.layer3(out)
+        out = self.avgpool(out)
+        out = out.view(out.size(0), -1)
+        out = self.fc(out)
+        return out
+    
+def client_fn_CIFAR10(context: Context) -> Client:
+    net = ResNet20()
+    partition_id = int(context.node_config["partition-id"])
+    client_train = train_sets_CIFAR10[int(partition_id)]
+    client_test = testset_CIFAR10
+    return FlowerClient(net, client_train, client_test).to_client()
+client_app_CIFAR10 = ClientApp(client_fn_CIFAR10)
+
+def evaluate_CIFAR10(server_round, parameters, config):
+    net = ResNet20()
+    set_weights(net, parameters)
+
+    _, accuracy = evaluate_model(net, testset_CIFAR10)
+    _, accuracy137 = evaluate_model(net, testset_137)
+    _, accuracy258 = evaluate_model(net, testset_258)
+    _, accuracy469 = evaluate_model(net, testset_469)
+    _, accuracy3510 = evaluate_model(net, testset_3510)
+    _, accuracy1410 = evaluate_model(net, testset_1410)
+
+    log(INFO, "test accuracy on all digits: %.4f", accuracy)
+    log(INFO, "test accuracy on [1,3,7]: %.4f", accuracy137)
+    log(INFO, "test accuracy on [2,5,8]: %.4f", accuracy258)
+    log(INFO, "test accuracy on [4,6,9]: %.4f", accuracy469)
+    log(INFO, "test accuracy on [3,5,10]: %.4f", accuracy3510)
+    log(INFO, "test accuracy on [1,4,10]: %.4f", accuracy1410)
+
+    if server_round == 5:
+        cm = compute_confusion_matrix(net, testset_CIFAR10)
+        plot_confusion_matrix(cm, "Final Global Model")
+
+net_CIFAR10 = ResNet20()
+params_CIFAR10 = ndarrays_to_parameters(get_weights(net_CIFAR10))
+
+def server_fn_CIFAR10(context: Context):
+    strategy = FedAvg(
+        fraction_fit=1.0,
+        fraction_evaluate=0.0,
+        initial_parameters=params_CIFAR10,
+        evaluate_fn=evaluate_CIFAR10,
+    )
+    config=ServerConfig(num_rounds=5)
+    return ServerAppComponents(
+        strategy=strategy,
+        config=config,
+    )
+server_CIFAR10 = ServerApp(server_fn=server_fn_CIFAR10)
+
+run_simulation(
+    server_app=server_CIFAR10,
+    client_app=client_app_CIFAR10,
+    num_supernodes=5,
+    backend_config=backend_setup,
+)
