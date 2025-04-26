@@ -8,6 +8,11 @@ from flwr.simulation import run_simulation
 from utils2 import *
 
 import torchvision.transforms as transforms
+import torch
+
+# Set device
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print(f"Using device: {device}")
 
 # CIFAR-10 channel statistics (computed over the 50K training images)
 mean = [0.4914, 0.4822, 0.4465]
@@ -71,7 +76,7 @@ testset_1410 = include_digits(testset_CIFAR10, [1, 4, 10])
 def set_weights(net, parameters):
     params_dict = zip(net.state_dict().keys(), parameters)
     state_dict = OrderedDict(
-        {k: torch.tensor(v) for k, v in params_dict}
+        {k: torch.tensor(v).to(device) for k, v in params_dict}
     )
     net.load_state_dict(state_dict, strict=True)
 
@@ -84,20 +89,20 @@ def get_weights(net):
 
 class FlowerClient(NumPyClient):
     def __init__(self, net, trainset, testset):
-        self.net = net
+        self.net = net.to(device)
         self.trainset = trainset
         self.testset = testset
 
     # Train the model
     def fit(self, parameters, config):
         set_weights(self.net, parameters)
-        train_model(self.net, self.trainset)
+        train_model(self.net, self.trainset, device=device)
         return get_weights(self.net), len(self.trainset), {}
 
     # Test the model
     def evaluate(self, parameters: NDArrays, config: Dict[str, Scalar]):
         set_weights(self.net, parameters)
-        loss, accuracy = evaluate_model(self.net, self.testset)
+        loss, accuracy = evaluate_model(self.net, self.testset, device=device)
         return loss, len(self.testset), {"accuracy": accuracy}
     
 import torch
@@ -163,7 +168,7 @@ class ResNet20(nn.Module):
         return out
     
 def client_fn_CIFAR10(context: Context) -> Client:
-    net = ResNet20()
+    net = ResNet20().to(device)
     partition_id = int(context.node_config["partition-id"])
     client_train = train_sets_CIFAR10[int(partition_id)]
     client_test = testset_CIFAR10
@@ -171,15 +176,15 @@ def client_fn_CIFAR10(context: Context) -> Client:
 client_app_CIFAR10 = ClientApp(client_fn_CIFAR10)
 
 def evaluate_CIFAR10(server_round, parameters, config):
-    net = ResNet20()
+    net = ResNet20().to(device)
     set_weights(net, parameters)
 
-    _, accuracy = evaluate_model(net, testset_CIFAR10)
-    _, accuracy137 = evaluate_model(net, testset_137)
-    _, accuracy258 = evaluate_model(net, testset_258)
-    _, accuracy469 = evaluate_model(net, testset_469)
-    _, accuracy3510 = evaluate_model(net, testset_3510)
-    _, accuracy1410 = evaluate_model(net, testset_1410)
+    _, accuracy = evaluate_model(net, testset_CIFAR10, device=device)
+    _, accuracy137 = evaluate_model(net, testset_137, device=device)
+    _, accuracy258 = evaluate_model(net, testset_258, device=device)
+    _, accuracy469 = evaluate_model(net, testset_469, device=device)
+    _, accuracy3510 = evaluate_model(net, testset_3510, device=device)
+    _, accuracy1410 = evaluate_model(net, testset_1410, device=device)
 
     log(INFO, "test accuracy on all digits: %.4f", accuracy)
     log(INFO, "test accuracy on [1,3,7]: %.4f", accuracy137)
@@ -189,10 +194,10 @@ def evaluate_CIFAR10(server_round, parameters, config):
     log(INFO, "test accuracy on [1,4,10]: %.4f", accuracy1410)
 
     if server_round == 5:
-        cm = compute_confusion_matrix(net, testset_CIFAR10)
+        cm = compute_confusion_matrix(net, testset_CIFAR10, device=device)
         plot_confusion_matrix(cm, "Final Global Model")
 
-net_CIFAR10 = ResNet20()
+net_CIFAR10 = ResNet20().to(device)
 params_CIFAR10 = ndarrays_to_parameters(get_weights(net_CIFAR10))
 
 def server_fn_CIFAR10(context: Context):
