@@ -58,8 +58,8 @@ def exclude_classes(dataset, excluded_classes):
 part1 = exclude_classes(part1, excluded_classes=[1, 3, 7])
 part2 = exclude_classes(part2, excluded_classes=[2, 5, 8])
 part3 = exclude_classes(part3, excluded_classes=[4, 6, 9])
-part4 = exclude_classes(part4, excluded_classes=[3, 5, 10])
-part5 = exclude_classes(part5, excluded_classes=[1, 4, 10])
+part4 = exclude_classes(part4, excluded_classes=[3, 5, 9])
+part5 = exclude_classes(part5, excluded_classes=[1, 4, 9])
 
 train_sets_CIFAR10 = [part1, part2, part3, part4, part5]
 
@@ -69,8 +69,8 @@ testset_CIFAR10 = datasets.CIFAR10(
 testset_137 = include_digits(testset_CIFAR10, [1, 3, 7])
 testset_258 = include_digits(testset_CIFAR10, [2, 5, 8])
 testset_469 = include_digits(testset_CIFAR10, [4, 6, 9])
-testset_3510 = include_digits(testset_CIFAR10, [3, 5, 10])
-testset_1410 = include_digits(testset_CIFAR10, [1, 4, 10])
+testset_359 = include_digits(testset_CIFAR10, [3, 5, 9])
+testset_149 = include_digits(testset_CIFAR10, [1, 4, 9])
 
 # Sets the parameters of the model
 def set_weights(net, parameters):
@@ -246,15 +246,15 @@ def evaluate_CIFAR10(server_round, parameters, config):
     _, accuracy137 = evaluate_model(net, testset_137, device=device)
     _, accuracy258 = evaluate_model(net, testset_258, device=device)
     _, accuracy469 = evaluate_model(net, testset_469, device=device)
-    _, accuracy3510 = evaluate_model(net, testset_3510, device=device)
-    _, accuracy1410 = evaluate_model(net, testset_1410, device=device)
+    _, accuracy359 = evaluate_model(net, testset_359, device=device)
+    _, accuracy149 = evaluate_model(net, testset_149, device=device)
 
     log(INFO, "test accuracy on all digits: %.4f", accuracy)
     log(INFO, "test accuracy on [1,3,7]: %.4f", accuracy137)
     log(INFO, "test accuracy on [2,5,8]: %.4f", accuracy258)
     log(INFO, "test accuracy on [4,6,9]: %.4f", accuracy469)
-    log(INFO, "test accuracy on [3,5,10]: %.4f", accuracy3510)
-    log(INFO, "test accuracy on [1,4,10]: %.4f", accuracy1410)
+    log(INFO, "test accuracy on [3,5,9]: %.4f", accuracy359)
+    log(INFO, "test accuracy on [1,4,9]: %.4f", accuracy149)
 
     if server_round == 5:
         cm = compute_confusion_matrix(net, testset_CIFAR10, device=device)
