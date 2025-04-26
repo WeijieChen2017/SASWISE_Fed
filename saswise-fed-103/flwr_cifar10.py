@@ -125,6 +125,31 @@ def evaluate_model(model, test_set, val_steps=None, device=None):
     # print(f"Test Accuracy: {accuracy:.4f}, Average Loss: {average_loss:.4f}")
     return average_loss, accuracy
 
+def train_model(model, train_set, device=None):
+    batch_size = 64
+    num_epochs = 10
+
+    # If device is not provided, get it from the model
+    if device is None:
+        device = next(model.parameters()).device
+
+    train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
+
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
+
+    model.train()
+    for epoch in range(num_epochs):
+        running_loss = 0.0
+        for inputs, labels in train_loader:
+            inputs, labels = inputs.to(device), labels.to(device)
+            optimizer.zero_grad()
+            outputs = model(inputs)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+            running_loss += loss.item()
+
 class FlowerClient(NumPyClient):
     def __init__(self, net, trainset, testset):
         self.net = net.to(device)
@@ -251,6 +276,35 @@ def server_fn_CIFAR10(context: Context):
         config=config,
     )
 server_CIFAR10 = ServerApp(server_fn=server_fn_CIFAR10)
+
+def compute_confusion_matrix(model, testset, device=None):
+    # If device is not provided, get it from the model
+    if device is None:
+        device = next(model.parameters()).device
+    
+    # Initialize lists to store true labels and predicted labels
+    true_labels = []
+    predicted_labels = []
+
+    # Iterate over the test set to get predictions
+    for image, label in testset:
+        # Forward pass through the model to get predictions
+        image = image.unsqueeze(0).to(device)  # Add batch dimension and move to device
+        output = model(image)
+        _, predicted = torch.max(output, 1)
+
+        # Append true and predicted labels to lists
+        true_labels.append(label)
+        predicted_labels.append(predicted.item())
+
+    # Convert lists to numpy arrays
+    true_labels = np.array(true_labels)
+    predicted_labels = np.array(predicted_labels)
+
+    # Compute confusion matrix
+    cm = confusion_matrix(true_labels, predicted_labels)
+
+    return cm
 
 run_simulation(
     server_app=server_CIFAR10,
