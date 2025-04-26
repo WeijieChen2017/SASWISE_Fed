@@ -1,4 +1,10 @@
 {
+    "dataset": {
+        "name": "CIFAR-10",
+        "num_classes": 10,
+        "num_channels": 3,
+        "image_size": 32
+    },
     "training": {
       "num_clients": 3,
       "num_rounds": 100,
