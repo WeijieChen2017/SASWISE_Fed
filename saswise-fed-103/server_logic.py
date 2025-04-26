@@ -145,11 +145,15 @@ def server_fn_factory(initial_parameters, evaluate_fn, num_clients, num_rounds):
         num_rounds: Total number of federation rounds
     
     Returns:
-        server_fn: Function that configures and returns a ServerApp
+        server_fn: Function that configures and returns server components
     """
     
-    def server_fn(context=None) -> ServerApp:
-        """Configure and create a ServerApp instance."""
+    def server_fn(context=None):
+        """Configure and return server components.
+        
+        Returns:
+            A tuple containing (server, config, strategy)
+        """
         
         # Use FedAvg strategy
         strategy = FedAvg(
@@ -165,9 +169,7 @@ def server_fn_factory(initial_parameters, evaluate_fn, num_clients, num_rounds):
         # Create server configuration
         server_config = ServerConfig(num_rounds=num_rounds)
         
-        return ServerApp(
-            config=server_config, 
-            strategy=strategy
-        )
+        # Create server (None means Flower will create the default server)
+        return None, server_config, strategy
     
     return server_fn 
