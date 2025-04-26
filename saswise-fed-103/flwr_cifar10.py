@@ -5,7 +5,24 @@ from flwr.server import ServerAppComponents
 from flwr.server.strategy import FedAvg
 from flwr.simulation import run_simulation
 
-from utils2 import *
+# from utils2 import *
+from torchvision import datasets, transforms
+from torch.utils.data import DataLoader, random_split
+from collections import OrderedDict
+from typing import Dict
+from flwr.common import NDArrays, Scalar
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torchvision import datasets, transforms
+import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
+import numpy as np
+from flwr.common.logger import log
+from logging import INFO, ERROR
+backend_setup = {"init_args": {"logging_level": ERROR, "log_to_driver": False}}
+
 
 import torchvision.transforms as transforms
 import torch
@@ -39,6 +56,22 @@ split_size = total_length // 5
 torch.manual_seed(42)
 part1, part2, part3, part4, part5 = random_split(train_set_CIFAR10, [split_size] * 5)
 
+def include_classes(dataset, included_classes):
+    """
+    Create a subset of CIFAR-10 dataset including only specified classes.
+    
+    Args:
+        dataset: The CIFAR-10 dataset
+        included_classes: List of class indices to include
+        
+    Returns:
+        Subset of the dataset with only the included classes
+    """
+    including_indices = [
+        idx for idx in range(len(dataset)) if dataset[idx][1] in included_classes
+    ]
+    return torch.utils.data.Subset(dataset, including_indices)
+
 def exclude_classes(dataset, excluded_classes):
     """
     Create a subset of CIFAR-10 dataset excluding specified classes.
@@ -66,11 +99,11 @@ train_sets_CIFAR10 = [part1, part2, part3, part4, part5]
 testset_CIFAR10 = datasets.CIFAR10(
     "./CIFAR10_data/", download=True, train=False, transform=test_transform_CIFAR10
 )
-testset_137 = include_digits(testset_CIFAR10, [1, 3, 7])
-testset_258 = include_digits(testset_CIFAR10, [2, 5, 8])
-testset_469 = include_digits(testset_CIFAR10, [4, 6, 9])
-testset_359 = include_digits(testset_CIFAR10, [3, 5, 9])
-testset_149 = include_digits(testset_CIFAR10, [1, 4, 9])
+testset_137 = include_classes(testset_CIFAR10, [1, 3, 7])
+testset_258 = include_classes(testset_CIFAR10, [2, 5, 8])
+testset_469 = include_classes(testset_CIFAR10, [4, 6, 9])
+testset_359 = include_classes(testset_CIFAR10, [3, 5, 9])
+testset_149 = include_classes(testset_CIFAR10, [1, 4, 9])
 
 # Sets the parameters of the model
 def set_weights(net, parameters):
@@ -158,9 +191,13 @@ class FlowerClient(NumPyClient):
 
     # Train the model
     def fit(self, parameters, config):
-        set_weights(self.net, parameters)
-        train_model(self.net, self.trainset, device=device)
-        return get_weights(self.net), len(self.trainset), {}
+        try:
+            set_weights(self.net, parameters)
+            train_model(self.net, self.trainset, device=device)
+            return get_weights(self.net), len(self.trainset), {}
+        except Exception as e:
+            print(f"Client training error: {e}")
+            raise
 
     # Test the model
     def evaluate(self, parameters: NDArrays, config: Dict[str, Scalar]):
@@ -277,6 +314,15 @@ def server_fn_CIFAR10(context: Context):
     )
 server_CIFAR10 = ServerApp(server_fn=server_fn_CIFAR10)
 
+def plot_confusion_matrix(cm, title):
+    plt.figure(figsize=(6, 4))
+    sns.heatmap(cm, annot=True, cmap="Blues", fmt="d", linewidths=0.5)
+    plt.title(title)
+    plt.xlabel("Predicted Label")
+    plt.ylabel("True Label")
+    plt.show()
+
+
 def compute_confusion_matrix(model, testset, device=None):
     # If device is not provided, get it from the model
     if device is None:
@@ -305,6 +351,9 @@ def compute_confusion_matrix(model, testset, device=None):
     cm = confusion_matrix(true_labels, predicted_labels)
 
     return cm
+
+for i, dataset in enumerate(train_sets_CIFAR10):
+    print(f"Client {i} dataset size: {len(dataset)}")
 
 run_simulation(
     server_app=server_CIFAR10,
