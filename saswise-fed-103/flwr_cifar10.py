@@ -87,6 +87,44 @@ def get_weights(net):
     ]
     return ndarrays
 
+def evaluate_model(model, test_set, val_steps=None, device=None):
+    # If device is not provided, get it from the model
+    if device is None:
+        device = next(model.parameters()).device  # Get device from model
+    model.eval()
+    correct = 0
+    total = 0
+    total_loss = 0
+
+    test_loader = DataLoader(test_set, batch_size=64, shuffle=False)
+    criterion = nn.CrossEntropyLoss()
+
+    with torch.no_grad():
+        for batch_idx, (inputs, labels) in enumerate(test_loader):
+            # If val_steps is provided, only evaluate on that many batches
+            if val_steps is not None and batch_idx >= val_steps:
+                break
+                
+            inputs, labels = inputs.to(device), labels.to(device)
+            outputs = model(inputs)
+            _, predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+
+            loss = criterion(outputs, labels)
+            total_loss += loss.item()
+
+    # Adjust loss calculation if we're using val_steps
+    if val_steps is not None and batch_idx < len(test_loader):
+        num_batches = min(val_steps, batch_idx + 1)
+    else:
+        num_batches = len(test_loader)
+        
+    accuracy = correct / total
+    average_loss = total_loss / num_batches
+    # print(f"Test Accuracy: {accuracy:.4f}, Average Loss: {average_loss:.4f}")
+    return average_loss, accuracy
+
 class FlowerClient(NumPyClient):
     def __init__(self, net, trainset, testset):
         self.net = net.to(device)
