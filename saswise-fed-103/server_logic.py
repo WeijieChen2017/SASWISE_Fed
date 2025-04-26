@@ -148,7 +148,7 @@ def server_fn_factory(initial_parameters, evaluate_fn, num_clients, num_rounds):
         server_fn: Function that configures and returns a ServerApp
     """
     
-    def server_fn() -> ServerApp:
+    def server_fn(context=None) -> ServerApp:
         """Configure and create a ServerApp instance."""
         
         # Use FedAvg strategy
