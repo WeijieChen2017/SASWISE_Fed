@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 import torch.nn as nn
 from typing import Dict, Optional, Tuple, List
 
-from flwr.server import ServerApp, ServerConfig, ServerFn
+from flwr.server import ServerApp, ServerConfig
 from flwr.server.strategy import FedAvg
 from flwr.common import EvaluateRes, FitRes, Parameters, Scalar, parameters_to_ndarrays
 
