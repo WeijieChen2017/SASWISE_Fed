@@ -8,14 +8,14 @@ from pathlib import Path
 from tqdm import tqdm
 import argparse
 
-def binarize_label(label_path, threshold=0.5, suffix="_binary", save=True):
+def binarize_label(label_path, threshold=0.5, suffix=None, save=True):
     """
     Load a label, apply threshold, and save the binary version
     
     Args:
         label_path: Path to the label file
         threshold: Threshold value for binarization (default: 0.5)
-        suffix: Suffix to add to the output filename (default: "_binary")
+        suffix: Suffix to add to the output filename (default: None, which overwrites original)
         save: Whether to save the binarized label (default: True)
         
     Returns:
@@ -25,8 +25,8 @@ def binarize_label(label_path, threshold=0.5, suffix="_binary", save=True):
     img = nib.load(label_path)
     data = img.get_fdata()
     
-    # Apply threshold
-    binary_data = (data >= threshold).astype(np.float32)
+    # Apply threshold using uint8 for true binary (0 and 1) values
+    binary_data = (data >= threshold).astype(np.uint8)
     
     # Check if any changes were made
     if np.array_equal(data, binary_data):
@@ -51,19 +51,20 @@ def binarize_label(label_path, threshold=0.5, suffix="_binary", save=True):
         # Save the binary label
         binary_img = nib.Nifti1Image(binary_data, img.affine, img.header)
         nib.save(binary_img, output_path)
+        print(f"Binarized and saved to {output_path}")
         
         return output_path
     
     return None
 
-def process_json_file(json_path, threshold=0.5, suffix="_binary", save=True):
+def process_json_file(json_path, threshold=0.5, suffix=None, save=True):
     """
     Process all labels in a JSON file
     
     Args:
         json_path: Path to the JSON file
         threshold: Threshold value for binarization (default: 0.5)
-        suffix: Suffix to add to the output filename (default: "_binary")
+        suffix: Suffix to add to the output filename (default: None, which overwrites original)
         save: Whether to save the binarized labels (default: True)
         
     Returns:
@@ -140,8 +141,8 @@ if __name__ == "__main__":
                         help="Path to the JSON file containing label paths")
     parser.add_argument("--threshold", type=float, default=0.5,
                         help="Threshold value for binarization (default: 0.5)")
-    parser.add_argument("--suffix", type=str, default="_binary",
-                        help="Suffix to add to the output filenames (default: '_binary')")
+    parser.add_argument("--suffix", type=str, default=None,
+                        help="Suffix to add to the output filenames (default: None, which overwrites original files)")
     parser.add_argument("--save", action="store_true", default=True,
                         help="Save the binarized labels")
     parser.add_argument("--update_json", action="store_true", default=False,
