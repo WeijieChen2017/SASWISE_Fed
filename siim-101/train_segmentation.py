@@ -10,6 +10,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import Dataset, DataLoader
 from monai.networks.nets import UNet
 from monai.losses import DiceLoss, DiceCELoss
@@ -285,10 +286,22 @@ def main(args):
     scaler = GradScaler('cuda', enabled=args.use_amp)
     logger.info(f"Using automatic mixed precision: {args.use_amp}")
     
+    # Determine which dataset to use based on resolution
+    if args.resolution == "low":
+        fold_file = "balanced_siim_4fold_128.json" if not args.fold_file else args.fold_file
+        # Default ROI size for low resolution (128x128)
+        if args.roi_size == [256, 256, 32]:  # If using the default value
+            args.roi_size = [128, 128, 32]
+        logger.info(f"Using low resolution dataset (128x128xZ) with ROI size: {args.roi_size}")
+    else:  # high or original resolution
+        fold_file = "balanced_siim_4fold.json" if not args.fold_file else args.fold_file
+        logger.info(f"Using original resolution dataset (512x512xZ) with ROI size: {args.roi_size}")
+    
     # Load fold data
-    fold_file = args.fold_file if args.fold_file else "balanced_siim_4fold.json"
     with open(fold_file, 'r') as f:
         fold_data = json.load(f)
+    
+    logger.info(f"Using fold file: {fold_file}")
     
     # Get training and validation data for the specified fold
     train_folds = [f"fold_{(args.fold+1) % 4}", f"fold_{(args.fold+2) % 4}"]
@@ -317,17 +330,17 @@ def main(args):
     logger.info(f"Training samples: {len(train_data)} (filtered out {len(invalid_train)} samples with z < {args.min_z_dim})")
     logger.info(f"Validation samples: {len(val_data)} (filtered out {len(invalid_val)} samples with z < {args.min_z_dim})")
     
-    # Define z-score normalization parameters from dataset analysis
-    mean_intensity = -718.3605
-    std_intensity = 804.9248
+    # Define min-max normalization parameters
+    min_intensity = -1024
+    max_intensity = 1976
     
     # Split transforms into load and training transforms for better caching
     # Load transforms will be cached, training transforms will be applied dynamically
     load_transforms = Compose([
         LoadImaged(keys=["image", "label"]),
         EnsureChannelFirstd(keys=["image", "label"]),
-        # Z-Score normalization based on dataset statistics
-        NormalizeIntensityd(keys=["image"], subtrahend=mean_intensity, divisor=std_intensity),
+        # Min-Max normalization with clipping
+        ScaleIntensityd(keys=["image"], minv=0.0, maxv=1.0, a_min=min_intensity, a_max=max_intensity, clip=True),
         CenterSpatialCropd(keys=["image", "label"], roi_size=args.roi_size),
     ])
     
@@ -345,8 +358,8 @@ def main(args):
     val_transforms = Compose([
         LoadImaged(keys=["image", "label"]),
         EnsureChannelFirstd(keys=["image", "label"]),
-        # Z-Score normalization based on dataset statistics
-        NormalizeIntensityd(keys=["image"], subtrahend=mean_intensity, divisor=std_intensity),
+        # Min-Max normalization with clipping
+        ScaleIntensityd(keys=["image"], minv=0.0, maxv=1.0, a_min=min_intensity, a_max=max_intensity, clip=True),
         CenterSpatialCropd(keys=["image", "label"], roi_size=args.roi_size),
         ToTensord(keys=["image", "label"]),
         EnsureTyped(keys=["image", "label"]),
@@ -413,7 +426,7 @@ def main(args):
             transform=Compose([
                 LoadImaged(keys=["image", "label"]),
                 EnsureChannelFirstd(keys=["image", "label"]),
-                NormalizeIntensityd(keys=["image"], subtrahend=mean_intensity, divisor=std_intensity),
+                ScaleIntensityd(keys=["image"], minv=0.0, maxv=1.0, a_min=min_intensity, a_max=max_intensity, clip=True),
                 CenterSpatialCropd(keys=["image", "label"], roi_size=args.roi_size)
             ]),
             cache_dir=os.path.join(args.cache_dir, "val_pre")
@@ -517,9 +530,15 @@ def main(args):
         cache_roi_weight_map=True
     )
     
-    # Define loss function, optimizer, and metrics
+    # Define loss function, optimizer, scheduler, and metrics
     loss_function = DiceCELoss(to_onehot_y=False, sigmoid=True).to(device)
     optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
+    # Cosine annealing scheduler to gradually decrease learning rate from initial to minimum
+    scheduler = CosineAnnealingLR(
+        optimizer, 
+        T_max=args.num_epochs,
+        eta_min=args.min_learning_rate
+    )
     dice_metric = DiceMetric(include_background=True, reduction="mean")
     
     # Use CUDA events for synchronization and timing
@@ -597,7 +616,13 @@ def main(args):
         # Validate
         val_loss, val_dice = validate_epoch(model, val_dataloader, loss_function, dice_metric, device, logger, sliding_window_inferer)
         
-        logger.info(f"Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, Val Dice: {val_dice:.4f}")
+        # Get current learning rate
+        current_lr = optimizer.param_groups[0]['lr']
+        
+        logger.info(f"Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, Val Dice: {val_dice:.4f}, LR: {current_lr:.6f}")
+        
+        # Step the learning rate scheduler
+        scheduler.step()
         
         # Save metrics to training log
         epoch_metrics = {
@@ -605,6 +630,7 @@ def main(args):
             "train_loss": train_loss,
             "val_loss": val_loss,
             "val_dice": val_dice,
+            "learning_rate": current_lr,
             "timestamp": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
         training_metrics.append(epoch_metrics)
@@ -621,9 +647,11 @@ def main(args):
                 'epoch': epoch + 1,
                 'model_state_dict': model.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
+                'scheduler_state_dict': scheduler.state_dict(),
                 'train_loss': train_loss,
                 'val_loss': val_loss,
                 'val_dice': val_dice,
+                'learning_rate': current_lr,
             }, checkpoint_path)
             logger.info(f"Saved checkpoint at epoch {epoch+1} to {checkpoint_path}")
         
@@ -650,7 +678,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="SIIM Segmentation Training")
     parser.add_argument("--fold", type=int, default=0, help="Fold number to use for validation (0-3)")
-    parser.add_argument("--fold_file", type=str, default="balanced_siim_4fold.json", help="Path to the fold file")
+    parser.add_argument("--fold_file", type=str, default="", help="Path to the fold file")
     parser.add_argument("--output_dir", type=str, default="training", help="Directory to save model outputs")
     parser.add_argument("--log_dir", type=str, default="logs", help="Directory to save training logs")
     parser.add_argument("--cache_dir", type=str, default="cache", help="Directory to save persistent cache files")
@@ -659,8 +687,9 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", type=int, default=4, help="Batch size for training")
     parser.add_argument("--num_workers", type=int, default=32, help="Number of dataloader workers")
     parser.add_argument("--cache_rate", type=float, default=1.0, help="Proportion of data to cache in memory")
-    parser.add_argument("--num_epochs", type=int, default=100, help="Number of training epochs")
-    parser.add_argument("--learning_rate", type=float, default=1e-4, help="Learning rate")
+    parser.add_argument("--num_epochs", type=int, default=1000, help="Number of training epochs")
+    parser.add_argument("--learning_rate", type=float, default=1e-4, help="Initial learning rate")
+    parser.add_argument("--min_learning_rate", type=float, default=1e-5, help="Minimum learning rate at the end of training")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
     parser.add_argument("--min_z_dim", type=int, default=32, help="Minimum required z dimension for samples")
     parser.add_argument("--roi_size", type=int, nargs=3, default=[256, 256, 32], help="ROI size for training [x, y, z]")
@@ -670,6 +699,8 @@ if __name__ == "__main__":
                         help="Caching strategy: memory, disk, both, or none")
     parser.add_argument("--preload_data", action="store_true", default=True, 
                         help="Pre-load and transform data before training begins (slower startup, faster epochs)")
+    parser.add_argument("--resolution", choices=["high", "low"], default="high",
+                        help="Dataset resolution: high (512x512) or low (128x128)")
     
     args = parser.parse_args()
     
