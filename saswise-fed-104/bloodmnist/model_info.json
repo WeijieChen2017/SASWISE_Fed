@@ -1,0 +1,5 @@
+{
+    "model_type": "ResNet-50-2D",
+    "in_channels": 3,
+    "num_classes": 8
+}

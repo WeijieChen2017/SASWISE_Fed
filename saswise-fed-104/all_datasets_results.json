@@ -1,0 +1,12 @@
+[
+    {
+        "dataset": "pathmnist",
+        "model_type": "ResNet-50-2D",
+        "task": "multi-class",
+        "n_channels": 3,
+        "n_classes": 9,
+        "best_test_acc": 0.8034818941504178,
+        "final_train_acc": 0.9364860660473798,
+        "final_test_acc": 0.7876044568245125
+    }
+]

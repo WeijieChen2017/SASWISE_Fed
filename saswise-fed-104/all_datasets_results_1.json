@@ -1,0 +1,12 @@
+[
+    {
+        "dataset": "organamnist",
+        "model_type": "ResNet-50-2D",
+        "task": "multi-class",
+        "n_channels": 1,
+        "n_classes": 11,
+        "best_test_acc": 0.866745415682304,
+        "final_train_acc": 0.9412343392841642,
+        "final_test_acc": 0.7620654741815728
+    }
+]

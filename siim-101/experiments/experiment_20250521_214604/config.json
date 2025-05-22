@@ -1,0 +1,25 @@
+{
+    "fold": 2,
+    "fold_file": "balanced_siim_4fold.json",
+    "output_dir": "training",
+    "log_dir": "logs",
+    "cache_dir": "cache",
+    "experiment_dir": "experiments",
+    "checkpoint_freq": 10,
+    "batch_size": 4,
+    "num_workers": 32,
+    "cache_rate": 1.0,
+    "num_epochs": 100,
+    "learning_rate": 0.0001,
+    "seed": 42,
+    "min_z_dim": 32,
+    "roi_size": [
+        256,
+        256,
+        32
+    ],
+    "use_amp": true,
+    "use_cache": true,
+    "cache_type": "both",
+    "preload_data": true
+}

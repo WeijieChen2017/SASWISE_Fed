@@ -1,0 +1,1041 @@
+{
+  "fold_0": [
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/10.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/10.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/12.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/12.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/13.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/13.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/14.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/14.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/15.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/15.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/18.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/18.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/19.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/19.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/20.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/20.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/21.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/21.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/22.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/22.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/23.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/23.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/25.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/25.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/27.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/27.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/29.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/29.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/3.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/3.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/31.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/31.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/33.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/33.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/34.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/34.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/35.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/35.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/36.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/36.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/37.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/37.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/38.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/38.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/39.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/39.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/4.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/4.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/40.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/40.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/41.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/41.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/42.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/42.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/43.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/43.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/44.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/44.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/45.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/45.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/46.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/46.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/5.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/5.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/7.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/7.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/8.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/8.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/9.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/labels/9.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/10.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/10.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/12.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/12.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/13.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/13.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/14.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/14.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/15.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/15.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/18.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/18.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/19.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/19.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/20.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/20.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/21.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/21.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/22.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/22.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/23.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/23.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/25.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/25.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/27.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/27.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/29.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/29.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/3.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/3.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/31.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/31.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/33.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/33.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/34.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/34.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/35.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/35.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/36.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/36.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/37.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/37.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/38.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/38.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/39.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/39.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/4.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/4.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/40.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/40.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/41.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/41.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/42.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/42.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/43.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/43.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/44.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/44.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/45.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/45.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/46.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/46.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/5.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/5.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/7.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/7.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/8.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/8.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/data/9.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_2_Test/For_FedTraining/labels/9.nii.gz"
+    }
+  ],
+  "fold_1": [
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/1.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/1.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/11.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/11.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/12.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/12.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/14.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/14.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/15.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/15.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/17.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/17.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/19.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/19.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/21.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/21.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/23.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/23.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/25.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/25.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/26.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/26.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/27.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/27.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/29.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/29.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/3.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/3.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/30.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/30.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/31.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/31.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/32.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/32.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/33.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/33.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/35.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/35.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/36.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/36.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/38.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/38.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/39.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/39.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/4.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/4.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/40.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/40.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/42.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/42.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/44.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/44.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/45.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/45.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/46.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/46.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/48.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/48.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/5.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/5.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/50.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/50.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/51.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/51.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/52.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/52.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/53.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/53.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/55.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/55.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/7.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/7.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/data/9.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_3_Test/For_FedTraining/labels/9.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/1.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/1.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/10.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/10.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/11.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/11.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/12.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/12.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/13.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/13.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/14.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/14.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/15.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/15.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/16.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/16.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/18.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/18.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/19.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/19.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/2.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/2.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/20.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/20.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/22.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/22.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/23.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/23.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/24.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/24.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/25.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/25.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/26.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/26.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/28.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/28.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/29.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/29.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/3.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/3.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/30.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/30.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/31.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/31.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/32.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/32.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/33.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/33.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/35.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/35.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/36.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/36.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/37.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/37.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/38.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/38.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/39.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/39.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/4.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/4.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/41.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/41.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/43.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/43.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/44.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/44.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/45.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/45.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/46.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/46.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/47.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/47.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/48.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/48.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/49.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/49.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/5.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/5.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/50.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/50.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/51.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/51.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/52.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/52.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/53.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/53.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/54.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/54.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/55.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/55.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/56.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/56.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/57.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/57.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/58.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/58.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/59.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/59.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/6.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/6.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/61.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/61.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/63.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/63.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/65.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/65.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/66.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/66.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/68.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/68.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/69.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/69.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/7.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/7.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/71.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/71.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/72.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/72.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/74.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/74.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/75.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/75.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/76.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/76.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/77.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/77.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/79.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/79.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/8.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/8.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/80.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/80.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/81.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/81.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/82.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/82.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/83.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/83.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/84.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/84.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/85.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/85.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/87.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/87.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/88.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/88.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/89.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/89.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/9.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/9.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/90.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/90.nii.gz"
+    }
+  ],
+  "fold_2": [
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/1.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/1.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/10.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/10.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/12.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/12.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/13.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/13.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/14.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/14.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/15.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/15.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/19.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/19.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/2.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/2.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/21.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/21.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/22.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/22.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/23.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/23.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/24.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/24.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/25.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/25.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/28.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/28.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/3.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/3.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/30.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/30.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/32.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/32.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/34.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/34.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/35.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/35.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/36.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/36.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/38.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/38.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/39.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/39.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/4.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/4.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/40.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/40.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/42.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/42.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/44.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/44.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/45.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/45.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/46.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/46.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/48.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/48.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/49.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/49.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/5.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/5.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/50.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/50.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/51.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/51.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/52.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/52.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/54.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/54.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/6.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/6.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/7.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/7.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/data/8.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_5_Test/For_FedTraining/labels/8.nii.gz"
+    }
+  ],
+  "fold_3": [
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/1.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/1.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/10.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/10.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/11.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/11.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/12.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/12.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/14.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/14.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/16.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/16.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/18.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/18.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/2.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/2.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/20.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/20.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/23.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/23.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/25.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/25.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/26.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/26.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/27.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/27.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/29.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/29.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/3.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/3.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/31.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/31.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/33.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/33.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/35.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/35.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/36.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/36.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/38.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/38.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/40.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/40.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/41.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/41.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/42.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/42.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/44.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/44.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/45.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/45.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/46.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/46.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/47.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/47.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/48.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/48.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/49.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/49.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/5.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/5.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/51.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/51.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/6.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/6.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/7.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/7.nii.gz"
+    },
+    {
+      "image": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/data/8.nii.gz",
+      "label": "siim-101/SIIM_Fed_Learning_Phase1Data/Site_6_Test/For_FedTraining/labels/8.nii.gz"
+    }
+  ],
+  "metadata": {
+    "fold_distribution": {
+      "Site_1_Test": 0,
+      "Site_2_Test": 0,
+      "Site_3_Test": 1,
+      "Site_4_Test": 1,
+      "Site_5_Test": 2,
+      "Site_6_Test": 3
+    },
+    "total_samples": 255
+  }
+}

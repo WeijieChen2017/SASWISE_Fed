@@ -1,0 +1,19 @@
+{
+  "global": {
+    "testset_137_accuracy": 0.3313333333333333,
+    "testset_137_loss": 2.223088152865146,
+    "testset_258_accuracy": 0.0016666666666666668,
+    "testset_258_loss": 2.3244574069976807,
+    "testset_469_accuracy": 0.0,
+    "testset_469_loss": 2.3835782345305097
+  },
+  "clients": [],
+  "test_subset_metrics": {
+    "testset_137_accuracy": 0.3313333333333333,
+    "testset_137_loss": 2.223088152865146,
+    "testset_258_accuracy": 0.0016666666666666668,
+    "testset_258_loss": 2.3244574069976807,
+    "testset_469_accuracy": 0.0,
+    "testset_469_loss": 2.3835782345305097
+  }
+}
