@@ -5,15 +5,49 @@ import json
 import argparse
 from pathlib import Path
 from tqdm import tqdm
+import glob
 
-def generate_resample_commands(json_path, output_suffix="_afni", output_script="run_afni_resample.sh"):
+def delete_existing_files(file_path, suffixes_to_delete=["_128", "_binary"]):
+    """
+    Delete existing files with the specified suffixes
+    
+    Args:
+        file_path: Original file path to use as a base
+        suffixes_to_delete: List of suffixes to identify files for deletion
+    """
+    path = Path(file_path)
+    base_name = path.stem
+    if base_name.endswith('.nii'):
+        base_name = base_name[:-4]
+    
+    # Get the directory and the base file name without suffix
+    base_dir = path.parent
+    
+    # Check for each suffix and delete if found
+    for suffix in suffixes_to_delete:
+        # Create the pattern to match
+        pattern = str(base_dir / f"{base_name}{suffix}.*")
+        matching_files = glob.glob(pattern)
+        
+        # Delete each matching file
+        for match in matching_files:
+            try:
+                os.remove(match)
+                print(f"Deleted existing file: {match}")
+            except (OSError, PermissionError) as e:
+                print(f"Error deleting {match}: {e}")
+
+def generate_resample_commands(json_path, output_suffix="_128", output_script="run_afni_resample.sh", 
+                               delete_existing=True, suffixes_to_delete=["_128", "_binary"]):
     """
     Generate AFNI 3dresample commands for all images and labels in a JSON file
     
     Args:
         json_path: Path to the JSON file with image and label paths
-        output_suffix: Suffix to add to output files (default: "_afni")
+        output_suffix: Suffix to add to output files (default: "_128")
         output_script: Path to save the shell script with all commands (default: "run_afni_resample.sh")
+        delete_existing: Whether to delete existing files with the specified suffixes (default: True)
+        suffixes_to_delete: List of suffixes to identify files for deletion (default: ["_128", "_binary"])
     """
     # Load the JSON file
     with open(json_path, 'r') as f:
@@ -38,6 +72,15 @@ def generate_resample_commands(json_path, output_suffix="_afni", output_script="
     unique_label_paths = [x for x in label_paths if not (x in seen or seen.add(x))]
     
     print(f"Found {len(unique_image_paths)} unique images and {len(unique_label_paths)} unique labels")
+    
+    # Delete existing files if requested
+    if delete_existing:
+        print("Deleting existing files with specified suffixes...")
+        for img_path in tqdm(unique_image_paths, desc="Cleaning image files"):
+            delete_existing_files(img_path, suffixes_to_delete)
+        
+        for lbl_path in tqdm(unique_label_paths, desc="Cleaning label files"):
+            delete_existing_files(lbl_path, suffixes_to_delete)
     
     # Generate commands
     commands = []
@@ -125,16 +168,21 @@ def generate_resample_commands(json_path, output_suffix="_afni", output_script="
 
 def main():
     parser = argparse.ArgumentParser(description="Generate AFNI 3dresample commands for medical image resampling")
-    parser.add_argument("--json_path", type=str, default="balanced_siim_4fold_128.json",
+    parser.add_argument("--json_path", type=str, default="balanced_siim_4fold.json",
                         help="Path to the JSON file with image and label paths")
-    parser.add_argument("--output_suffix", type=str, default="_afni",
-                        help="Suffix to add to output files (default: '_afni')")
+    parser.add_argument("--output_suffix", type=str, default="_128",
+                        help="Suffix to add to output files (default: '_128')")
     parser.add_argument("--output_script", type=str, default="run_afni_resample.sh",
                         help="Path to save the shell script with all commands")
+    parser.add_argument("--delete_existing", action="store_true", default=True,
+                        help="Delete existing files with specified suffixes")
+    parser.add_argument("--suffixes_to_delete", nargs="+", default=["_128", "_binary"],
+                        help="List of suffixes to identify files for deletion")
     
     args = parser.parse_args()
     
-    generate_resample_commands(args.json_path, args.output_suffix, args.output_script)
+    generate_resample_commands(args.json_path, args.output_suffix, args.output_script, 
+                              args.delete_existing, args.suffixes_to_delete)
 
 if __name__ == "__main__":
     main() 
