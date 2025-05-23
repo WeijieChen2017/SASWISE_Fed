@@ -236,7 +236,7 @@ def filter_invalid_samples(data_list, min_z_dim=32, logger=None):
     
     for sample in data_list:
         # Load image header to check dimensions without loading entire image
-        img = nib.load(sample['image'])
+        img = nib.load(sample['image']).get_fdata()
         z_dim = img.shape[2]
         
         if z_dim >= min_z_dim:
