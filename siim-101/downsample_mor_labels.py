@@ -6,6 +6,7 @@ import argparse
 from pathlib import Path
 from tqdm import tqdm
 import subprocess
+import nibabel as nib
 
 def find_mor_files(search_dir, pattern="*_mor*.nii.gz"):
     """
@@ -29,6 +30,26 @@ def find_mor_files(search_dir, pattern="*_mor*.nii.gz"):
     print(f"Found {len(mor_files)} files matching pattern '{pattern}'")
     
     return sorted(mor_files)
+
+def get_image_dimensions(img_path):
+    """
+    Get the original pixel spacing/resolution of an image
+    
+    Args:
+        img_path: Path to the NIFTI image
+    
+    Returns:
+        Tuple of (x_dim, y_dim, z_dim) pixel spacing
+    """
+    try:
+        img = nib.load(img_path)
+        header = img.header
+        pixel_dimensions = header.get_zooms()
+        return pixel_dimensions
+    except Exception as e:
+        print(f"Error reading dimensions from {img_path}: {e}")
+        # Default values if we can't read the file
+        return (1.0, 1.0, 1.0)
 
 def delete_existing_file(file_path):
     """
@@ -88,7 +109,7 @@ def downsample_mor_files(search_dir, output_suffix="_128", output_script="run_do
     # Generate commands
     commands = []
     
-    for file_path in mor_files:
+    for file_path in tqdm(mor_files, desc="Processing _mor files"):
         # Generate output path
         output_path = generate_output_path(file_path, output_suffix)
         
@@ -96,14 +117,23 @@ def downsample_mor_files(search_dir, output_suffix="_128", output_script="run_do
         if delete_existing:
             delete_existing_file(output_path)
         
-        # Generate command for Nearest Neighbor interpolation
-        cmd = f"3dresample -dxyz 3.1248 3.1248 5 -rmode NN -prefix {output_path} -input {file_path}"
+        # Get original dimensions
+        x_dim, y_dim, z_dim = get_image_dimensions(file_path)
+        
+        # Calculate new dimensions (4x larger for x and y)
+        new_x_dim = x_dim * 4
+        new_y_dim = y_dim * 4
+        new_z_dim = z_dim  # Keep z dimension the same
+        
+        # Generate command for Nearest Neighbor interpolation with dynamic dimensions
+        cmd = f"3dresample -dxyz {new_x_dim} {new_y_dim} {new_z_dim} -rmode NN -prefix {output_path} -input {file_path}"
         commands.append(cmd)
     
     # Write commands to a shell script
     with open(output_script, 'w') as f:
         f.write("#!/bin/bash\n\n")
         f.write(f"# AFNI 3dresample commands for {len(commands)} _mor files using Nearest Neighbor interpolation\n")
+        f.write("# Dynamic resolution: 4x larger for x and y dimensions, z dimension preserved\n")
         for cmd in commands:
             f.write(f"{cmd}\n")
     
