@@ -347,7 +347,7 @@ def main(args):
         LoadImaged(keys=["image", "label"]),
         EnsureChannelFirstd(keys=["image", "label"]),
         # Min-Max normalization with clipping
-        ScaleIntensityd(keys=["image"], minv=0.0, maxv=1.0, a_min=min_intensity, a_max=max_intensity, clip=True),
+        ScaleIntensityd(keys=["image"], minv=min_intensity, maxv=max_intensity, clip=True),
         CenterSpatialCropd(keys=["image", "label"], roi_size=args.roi_size),
     ])
     
@@ -366,7 +366,7 @@ def main(args):
         LoadImaged(keys=["image", "label"]),
         EnsureChannelFirstd(keys=["image", "label"]),
         # Min-Max normalization with clipping
-        ScaleIntensityd(keys=["image"], minv=0.0, maxv=1.0, a_min=min_intensity, a_max=max_intensity, clip=True),
+        ScaleIntensityd(keys=["image"], minv=min_intensity, maxv=max_intensity, clip=True),
         CenterSpatialCropd(keys=["image", "label"], roi_size=args.roi_size),
         ToTensord(keys=["image", "label"]),
         EnsureTyped(keys=["image", "label"]),
