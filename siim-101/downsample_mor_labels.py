@@ -97,7 +97,7 @@ def downsample_mor_files(search_dir, output_suffix="_128", output_script="run_do
             delete_existing_file(output_path)
         
         # Generate command for Nearest Neighbor interpolation
-        cmd = f"3dresample -dxyz 3.1248 3.1248 1 -rmode NN -prefix {output_path} -input {file_path}"
+        cmd = f"3dresample -dxyz 3.1248 3.1248 5 -rmode NN -prefix {output_path} -input {file_path}"
         commands.append(cmd)
     
     # Write commands to a shell script
