@@ -236,13 +236,13 @@ def filter_invalid_samples(data_list, min_z_dim=32, logger=None):
     
     for sample in data_list:
         # Load image header to check dimensions without loading entire image
-        print(f"Loading image: {sample['image']}")
+        # print(f"Loading image: {sample['image']}")
         nii_file = nib.load(sample['image'])
-        print(f"Here are key params in its header: ")
-        print(f"affine: {nii_file.affine}")
-        print(f"pixel_dims: {nii_file.header.get_zooms()}")
-        print(f"data_type: {nii_file.header.get_data_dtype()}")
-        print(f"data_shape: {nii_file.header.get_data_shape()}")
+        # print(f"Here are key params in its header: ")
+        # print(f"affine: {nii_file.affine}")
+        # print(f"pixel_dims: {nii_file.header.get_zooms()}")
+        # print(f"data_type: {nii_file.header.get_data_dtype()}")
+        # print(f"data_shape: {nii_file.header.get_data_shape()}")
         img = nii_file.get_fdata()
         z_dim = img.shape[2]
         
