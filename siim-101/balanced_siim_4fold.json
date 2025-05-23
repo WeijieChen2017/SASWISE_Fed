@@ -1,4 +1,10 @@
 {
+  "error": [
+    {
+      "image": "SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/80.nii.gz",
+      "label": "SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/80.nii.gz"
+    }
+  ],
   "fold_0": [
     {
       "image": "SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/22.nii.gz",

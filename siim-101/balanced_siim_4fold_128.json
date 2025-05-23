@@ -1,4 +1,10 @@
 {
+  "error": [
+    {
+      "image": "SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/80_128.nii.gz",
+      "label": "SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/80_mor_128.nii.gz"
+    }
+  ],
   "fold_0": [
     {
       "image": "SIIM_Fed_Learning_Phase1Data/Site_1_Test/For_FedTraining/data/22_128.nii.gz",
@@ -703,10 +709,6 @@
     {
       "image": "SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/14_128.nii.gz",
       "label": "SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/14_128.nii.gz"
-    },
-    {
-      "image": "SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/80_128.nii.gz",
-      "label": "SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/labels/80_128.nii.gz"
     },
     {
       "image": "SIIM_Fed_Learning_Phase1Data/Site_4_Test/For_FedTraining/data/44_128.nii.gz",
