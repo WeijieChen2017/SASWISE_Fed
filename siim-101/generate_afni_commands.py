@@ -6,6 +6,7 @@ import argparse
 from pathlib import Path
 from tqdm import tqdm
 import glob
+import nibabel as nib
 
 def delete_existing_files(file_path, suffixes_to_delete=["_128", "_binary"]):
     """
@@ -36,6 +37,26 @@ def delete_existing_files(file_path, suffixes_to_delete=["_128", "_binary"]):
                 print(f"Deleted existing file: {match}")
             except (OSError, PermissionError) as e:
                 print(f"Error deleting {match}: {e}")
+
+def get_image_dimensions(img_path):
+    """
+    Get the original pixel spacing/resolution of an image
+    
+    Args:
+        img_path: Path to the NIFTI image
+    
+    Returns:
+        Tuple of (x_dim, y_dim, z_dim) pixel spacing
+    """
+    try:
+        img = nib.load(img_path)
+        header = img.header
+        pixel_dimensions = header.get_zooms()
+        return pixel_dimensions
+    except Exception as e:
+        print(f"Error reading dimensions from {img_path}: {e}")
+        # Default values if we can't read the file
+        return (1.0, 1.0, 1.0)
 
 def generate_resample_commands(json_path, output_suffix="_128", output_script="run_afni_resample.sh", 
                                delete_existing=True, suffixes_to_delete=["_128", "_binary"]):
@@ -88,7 +109,7 @@ def generate_resample_commands(json_path, output_suffix="_128", output_script="r
     label_commands = []
     
     # Process images (cubic interpolation)
-    for img_path in unique_image_paths:
+    for img_path in tqdm(unique_image_paths, desc="Processing images"):
         # Create output path
         path = Path(img_path)
         stem = path.stem
@@ -96,12 +117,20 @@ def generate_resample_commands(json_path, output_suffix="_128", output_script="r
             stem = stem[:-4]
         output_path = str(path.with_name(f"{stem}{output_suffix}.nii.gz"))
         
+        # Get original dimensions
+        x_dim, y_dim, z_dim = get_image_dimensions(img_path)
+        
+        # Calculate new dimensions (4x larger for x and y)
+        new_x_dim = x_dim * 4
+        new_y_dim = y_dim * 4
+        new_z_dim = z_dim  # Keep z dimension the same
+        
         # Generate command
-        cmd = f"3dresample -dxyz 3.1248 3.1248 5 -rmode Cu -prefix {output_path} -input {img_path}"
+        cmd = f"3dresample -dxyz {new_x_dim} {new_y_dim} {new_z_dim} -rmode Cu -prefix {output_path} -input {img_path}"
         image_commands.append(cmd)
     
     # Process labels (nearest neighbor interpolation)
-    for lbl_path in unique_label_paths:
+    for lbl_path in tqdm(unique_label_paths, desc="Processing labels"):
         # Create output path
         path = Path(lbl_path)
         stem = path.stem
@@ -109,8 +138,31 @@ def generate_resample_commands(json_path, output_suffix="_128", output_script="r
             stem = stem[:-4]
         output_path = str(path.with_name(f"{stem}{output_suffix}.nii.gz"))
         
+        # Get original dimensions from corresponding image (if available)
+        # If not available, get from the label itself
+        found_image = False
+        for img_path in unique_image_paths:
+            img_stem = Path(img_path).stem
+            if img_stem.endswith('.nii'):
+                img_stem = img_stem[:-4]
+            
+            lbl_stem = stem
+            # Check if image stem is in label stem (common naming convention)
+            if img_stem in lbl_stem:
+                x_dim, y_dim, z_dim = get_image_dimensions(img_path)
+                found_image = True
+                break
+        
+        if not found_image:
+            x_dim, y_dim, z_dim = get_image_dimensions(lbl_path)
+        
+        # Calculate new dimensions (4x larger for x and y)
+        new_x_dim = x_dim * 4
+        new_y_dim = y_dim * 4
+        new_z_dim = z_dim  # Keep z dimension the same
+        
         # Generate command
-        cmd = f"3dresample -dxyz 3.1248 3.1248 5 -rmode NN -prefix {output_path} -input {lbl_path}"
+        cmd = f"3dresample -dxyz {new_x_dim} {new_y_dim} {new_z_dim} -rmode NN -prefix {output_path} -input {lbl_path}"
         label_commands.append(cmd)
     
     # Combine all commands
