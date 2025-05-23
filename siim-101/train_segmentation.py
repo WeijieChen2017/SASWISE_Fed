@@ -288,13 +288,13 @@ def main(args):
     
     # Determine which dataset to use based on resolution
     if args.resolution == "low":
-        fold_file = "balanced_siim_4fold_128.json" if not args.fold_file else args.fold_file
+        fold_file = "balanced_siim_4fold_128_mor.json" if not args.fold_file else args.fold_file
         # Default ROI size for low resolution (128x128)
         if args.roi_size == [256, 256, 32]:  # If using the default value
             args.roi_size = [128, 128, 32]
         logger.info(f"Using low resolution dataset (128x128xZ) with ROI size: {args.roi_size}")
     else:  # high or original resolution
-        fold_file = "balanced_siim_4fold.json" if not args.fold_file else args.fold_file
+        fold_file = "balanced_siim_4fold_mor.json" if not args.fold_file else args.fold_file
         logger.info(f"Using original resolution dataset (512x512xZ) with ROI size: {args.roi_size}")
     
     # Load fold data
