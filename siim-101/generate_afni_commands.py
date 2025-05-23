@@ -97,7 +97,7 @@ def generate_resample_commands(json_path, output_suffix="_128", output_script="r
         output_path = str(path.with_name(f"{stem}{output_suffix}.nii.gz"))
         
         # Generate command
-        cmd = f"3dresample -dxyz 3.1248 3.1248 1 -rmode Cu -prefix {output_path} -input {img_path}"
+        cmd = f"3dresample -dxyz 3.1248 3.1248 5 -rmode Cu -prefix {output_path} -input {img_path}"
         image_commands.append(cmd)
     
     # Process labels (nearest neighbor interpolation)
@@ -110,7 +110,7 @@ def generate_resample_commands(json_path, output_suffix="_128", output_script="r
         output_path = str(path.with_name(f"{stem}{output_suffix}.nii.gz"))
         
         # Generate command
-        cmd = f"3dresample -dxyz 3.1248 3.1248 1 -rmode NN -prefix {output_path} -input {lbl_path}"
+        cmd = f"3dresample -dxyz 3.1248 3.1248 5 -rmode NN -prefix {output_path} -input {lbl_path}"
         label_commands.append(cmd)
     
     # Combine all commands
