@@ -19,7 +19,7 @@ from monai.transforms import (
     Compose,
     LoadImaged,
     EnsureChannelFirstd,
-    ScaleIntensityd,
+    ScaleIntensityRanged,
     NormalizeIntensityd,
     SpatialCropd,
     CenterSpatialCropd,
@@ -243,7 +243,7 @@ def filter_invalid_samples(data_list, min_z_dim=32, logger=None):
         # print(f"pixel_dims: {nii_file.header.get_zooms()}")
         # print(f"data_type: {nii_file.header.get_data_dtype()}")
         # print(f"data_shape: {nii_file.header.get_data_shape()}")
-        img = nii_file.get_fdata()
+        img = nib.load(sample['image']).get_fdata()
         z_dim = img.shape[2]
         
         if z_dim >= min_z_dim:
@@ -347,7 +347,7 @@ def main(args):
         LoadImaged(keys=["image", "label"]),
         EnsureChannelFirstd(keys=["image", "label"]),
         # Min-Max normalization with clipping
-        ScaleIntensityd(keys=["image"], minv=min_intensity, maxv=max_intensity, clip=True),
+        ScaleIntensityRanged(keys=["image"], b_min=0.0, b_max=1.0, a_min=min_intensity, a_max=max_intensity, clip=True),
         CenterSpatialCropd(keys=["image", "label"], roi_size=args.roi_size),
     ])
     
@@ -366,7 +366,7 @@ def main(args):
         LoadImaged(keys=["image", "label"]),
         EnsureChannelFirstd(keys=["image", "label"]),
         # Min-Max normalization with clipping
-        ScaleIntensityd(keys=["image"], minv=min_intensity, maxv=max_intensity, clip=True),
+        ScaleIntensityRanged(keys=["image"], b_min=0.0, b_max=1.0, a_min=min_intensity, a_max=max_intensity, clip=True),
         CenterSpatialCropd(keys=["image", "label"], roi_size=args.roi_size),
         ToTensord(keys=["image", "label"]),
         EnsureTyped(keys=["image", "label"]),
@@ -433,7 +433,7 @@ def main(args):
             transform=Compose([
                 LoadImaged(keys=["image", "label"]),
                 EnsureChannelFirstd(keys=["image", "label"]),
-                ScaleIntensityd(keys=["image"], minv=min_intensity, maxv=max_intensity, clip=True),
+                ScaleIntensityRanged(keys=["image"], b_min=0.0, b_max=1.0, a_min=min_intensity, a_max=max_intensity, clip=True),
                 CenterSpatialCropd(keys=["image", "label"], roi_size=args.roi_size)
             ]),
             cache_dir=os.path.join(args.cache_dir, "val_pre")
