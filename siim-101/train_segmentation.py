@@ -433,7 +433,7 @@ def main(args):
             transform=Compose([
                 LoadImaged(keys=["image", "label"]),
                 EnsureChannelFirstd(keys=["image", "label"]),
-                ScaleIntensityd(keys=["image"], minv=0.0, maxv=1.0, a_min=min_intensity, a_max=max_intensity, clip=True),
+                ScaleIntensityd(keys=["image"], minv=min_intensity, maxv=max_intensity, clip=True),
                 CenterSpatialCropd(keys=["image", "label"], roi_size=args.roi_size)
             ]),
             cache_dir=os.path.join(args.cache_dir, "val_pre")
